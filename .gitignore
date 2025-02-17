@@ -1,0 +1,10 @@
+# Folders
+.vscode/
+dist/
+node_modules/
+.cache
+build/
+
+# Files
+.DS_STORE
+.todo
