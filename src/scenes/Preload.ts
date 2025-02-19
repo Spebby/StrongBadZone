@@ -57,9 +57,10 @@ export class Preload extends Phaser.Scene {
         });
 
         // load meshes
-        this.load.obj('room', 'models/test.obj');
+        this.load.obj('room', 'models/wall.obj');
         this.load.obj('strongbad', 'models/strongbad.obj');
-        this.load.image('blank', 'models/SBZ.png')
+        this.load.image('blank', 'models/SBZ.png');
+        this.load.image('ref', 'models/ref.png');
 
         SoundMan.init(this);
         SoundMan.add('uiBlip', 'sfx/uiBlip.wav');

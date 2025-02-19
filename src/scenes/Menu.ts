@@ -2,6 +2,7 @@ import { GameConfig, UIConfig } from "../config";
 import { KeyMap } from "../keymap";
 import { gVar, gConst, saveCookie } from "../global";
 import { SoundMan } from "../soundman";
+import { Math as pMath } from 'phaser';
 
 export class MenuScene extends Phaser.Scene {
     private hsText  : Phaser.GameObjects.Text;
@@ -27,31 +28,34 @@ export class MenuScene extends Phaser.Scene {
         //let title = this.add.image(hWidth, hHeight / 2, 'title');
         //title.setScale(0.75);
 
-        var room = this.add.mesh(hWidth, hHeight, 'blank');
-        //const strongbad = this.add.mesh(hWidth, hHeight);
+        // this.add.image(hWidth, hHeight, 'ref').setScale(1.065);
+        const room      = this.add.mesh(hWidth, hHeight, 'blank');
+        const strongbad = this.add.mesh(hWidth, hHeight, 'blank');
 
-        room.addVerticesFromObj('room', 1);
-        //strongbad.addVerticesFromObj('strongbad', 0.1);
-
-        room.modelPosition.z = 5;
+        room.addVerticesFromObj('room', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
+        strongbad.addVerticesFromObj('strongbad', 1, 0, 0, 1, 0, pMath.DegToRad(-90), 0);
 
         this.debug = this.add.graphics();
         room.setDebug(this.debug);
-        //strongbad.setDebug(this.debug);
+        strongbad.setDebug(this.debug);
 
-        room.modelRotation.x = 180;
         room.panZ(-10);
+        strongbad.panZ(-10);
+        room.setOrtho(6.2, 4.6);
+        strongbad.setOrtho(6.2, 4.6);
 
         this.input.on('pointermove', (pointer : Phaser.Input.Pointer) => {
             if (!pointer.isDown) return;
-            room.modelRotation.x += pointer.velocity.x / 800;
-            room.modelRotation.y += pointer.velocity.y / 800;
+            room.modelRotation.y += pointer.velocity.x / 800;
+            room.modelRotation.x += pointer.velocity.y / 800;
+            strongbad.modelRotation.y += pointer.velocity.x / 800;
+            strongbad.modelRotation.x += pointer.velocity.y / 800;
         });
     }
 
     update() : void {
         this.debug.clear();
-        this.debug.lineStyle(2, 0xFACADE);
+        this.debug.lineStyle(2, 0x70161E);
     }
 
     changeScene() : void {

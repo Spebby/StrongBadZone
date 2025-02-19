@@ -7,7 +7,7 @@ export const GameConfig : Phaser.Types.Core.GameConfig = {
     title: 'Fly-By',
     url: 'https://github.com/Spebby/Endless-Runner',
     version: '0.0.1',
-    backgroundColor: 0x3a404d,
+    backgroundColor: 0x000000,
     type: Phaser.AUTO,
     scale: {
         mode: Phaser.Scale.FIT,
