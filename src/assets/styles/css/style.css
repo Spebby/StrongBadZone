@@ -1,0 +1,16 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #282c34;
+    color: #abb2bf;
+}
+
+@font-face {
+    font-family: 'Chillen';
+    src: url('../../fonts/Chillen.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'HapolePencil';
+    src: url('../../fonts/hapole_pencil.ttf') format('truetype');
+}
