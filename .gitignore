@@ -8,5 +8,5 @@ build/
 # Files
 .DS_STORE
 .todo
-.blend1
-.mtl
+*.blend1
+*.mtl
