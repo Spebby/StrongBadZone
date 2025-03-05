@@ -14,51 +14,10 @@ export class Preload extends Phaser.Scene {
     preload() : void {
         this.load.path = gConst.assetPath;
 
-        // Menu Assets
-        this.load.image('title', 'title/title.png');
-        this.load.image('titleBg', 'title/titleBg.png');
-        this.load.spritesheet('startText', 'title/start.png', {
-            frameWidth:  512,
-            frameHeight: 128,
-        });
-        this.load.image('cog',   'title/cog.png');
-        this.load.spritesheet('close', 'title/x.png', {
-            frameWidth:  256,
-            frameHeight: 256,
-        });
-
-        // Game Assets
-        this.load.image('bgTop',    'backgrounds/bgTop.png');
-        this.load.image('bgBottom', 'backgrounds/bgBottom.png');
-        this.load.image('mountain', 'backgrounds/mountain.png');
-
-        this.load.image('treesF', 'backgrounds/treesF.png');
-        this.load.image('treesM', 'backgrounds/treesM.png');
-        this.load.image('treesB', 'backgrounds/treesB.png');
-        this.load.spritesheet('player', 'player.png', {
-            frameWidth:  512,
-            frameHeight: 512,
-        });
-        this.load.spritesheet('bird', 'bird.png', {
-            frameWidth:  512,
-            frameHeight: 512,
-        });
-        this.load.spritesheet('balloon', 'balloon.png', {
-            frameWidth:  512,
-            frameHeight: 512,
-        });
-        this.load.spritesheet('coin', 'coin.png', {
-            frameWidth:  512,
-            frameHeight: 512,
-        });
-        this.load.spritesheet('clouds', 'clouds.png', {
-            frameWidth:  512,
-            frameHeight: 512,
-        });
-
         // load meshes
         this.load.obj('room', 'models/wall.obj');
         this.load.obj('strongbad', 'models/strongbad.obj');
+        this.load.obj('player', 'models/player.obj');
         this.load.image('blank', 'models/SBZ.png');
         this.load.image('ref', 'models/ref.png');
 
@@ -148,6 +107,6 @@ export class Preload extends Phaser.Scene {
             }
         }
 
-        this.scene.start('MenuScene');
+        this.scene.start('PlayScene');
     }
 }

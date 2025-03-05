@@ -1,5 +1,5 @@
 import { Preload } from './scenes/Preload';
-import { MenuScene } from './scenes/Menu';
+//import { MenuScene } from './scenes/Menu';
 import { PlayScene } from './scenes/Play';
 import { UIScene }   from './scenes/UI';
 
@@ -19,11 +19,11 @@ export const GameConfig : Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { x: 0, y: 10 },
+            gravity: { x: 0, y: 0 },
             debug: true
         }
     },
-    scene: [Preload, MenuScene, PlayScene, UIScene],
+    scene: [Preload, PlayScene, UIScene],
     input: {
         keyboard: true
     },
