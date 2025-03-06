@@ -60,6 +60,7 @@ export class Player extends GameObjects.GameObject {
     * @ref https://docs.phaser.io/api-documentation/event/scenes-events#update
     */
     update(time : number, delta : number) : void {
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, hWidth/4);
         if ( 0 < this.shieldTime ) {
             this.acceleration.x = 0; this.acceleration.y = 0;
             this.velocity.x = 0; this.velocity.y = 0;
@@ -83,6 +84,7 @@ export class Player extends GameObjects.GameObject {
         this.position.y += this.velocity.y * delta;
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
+    
     }
 
     block(side : string) {

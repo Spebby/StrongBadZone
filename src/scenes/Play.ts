@@ -19,10 +19,6 @@ export class PlayScene extends Phaser.Scene {
         super({ key: 'PlayScene' });
     }
 
-    preload() : void {
-
-    }
-
     create() : void {
         KeyMap.initialize(this);
         // setup UI.
@@ -75,9 +71,10 @@ export class PlayScene extends Phaser.Scene {
     update(time : number, delta : number) : void {
         delta /= 1000;
         this.edgeRender.clear();
-        this.edgeRender.lineStyle(30, 0x70161E);
+        this.edgeRender.lineStyle(5, 0x70161E);
 
         this.strongbad.update(time, delta);
+        this.player.update(time, delta);
     }
 
     changeScene() : void {
