@@ -69,12 +69,13 @@ export class PlayScene extends Phaser.Scene {
         });
 
         this.physics.world.drawDebug = true;
+        console.log(this);
     }
 
     update(time : number, delta : number) : void {
         delta /= 1000;
         this.edgeRender.clear();
-        this.edgeRender.lineStyle(3, 0x70161E);
+        this.edgeRender.lineStyle(30, 0x70161E);
 
         this.strongbad.update(time, delta);
     }

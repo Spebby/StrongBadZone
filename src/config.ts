@@ -4,8 +4,8 @@ import { PlayScene } from './scenes/Play';
 import { UIScene }   from './scenes/UI';
 
 export const GameConfig : Phaser.Types.Core.GameConfig = {
-    title: 'Fly-By',
-    url: 'https://github.com/Spebby/Endless-Runner',
+    title: 'StrongBadZone',
+    url: 'https://github.com/Spebby/StrongBadZone',
     version: '0.0.1',
     backgroundColor: 0x000000,
     type: Phaser.AUTO,

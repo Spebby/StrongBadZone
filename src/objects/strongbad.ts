@@ -13,7 +13,7 @@ export class Strongbad extends GameObjects.GameObject {
 
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
-    private projectile : strongbadProjectile;
+    //private projectile : Projectile;
 
 
     mesh : GameObjects.Mesh;
@@ -67,6 +67,6 @@ export class Strongbad extends GameObjects.GameObject {
         }
 
         this.fireTimer = this.fireDelay;
-        this.projectile = new strongbadProjectile(this.position.x, this.position.y, this.playerRef.getPosition());
+//        this.projectile = new strongbadProjectile(this.position.x, this.position.y, this.playerRef.getPosition());
     }
 }
