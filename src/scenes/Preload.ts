@@ -20,6 +20,7 @@ export class Preload extends Phaser.Scene {
         this.load.obj('player', 'models/player.obj');
         this.load.image('blank', 'models/SBZ.png');
         this.load.image('ref', 'models/ref.png');
+        this.load.image('goblin', 'goblin.png');
 
         SoundMan.init(this);
         SoundMan.add('uiBlip', 'sfx/uiBlip.wav');

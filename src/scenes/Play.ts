@@ -47,9 +47,10 @@ export class PlayScene extends Phaser.Scene {
 
         room.panZ(-10);
         room.setOrtho(6.2, 4.6);
-        strongmesh.panZ(-10);
+        //strongmesh.panZ(-10);
+        strongmesh.z -= 10;
         strongmesh.setOrtho(6.2, 4.6);
-        playermesh.panZ(-5);
+        //playermesh.panZ(-5);
         playermesh.setOrtho(6.2, 4.6);
 
         this.player = new Player(this, hWidth, hHeight * 2 - 100, playermesh, 200, 2, 1);
@@ -71,7 +72,7 @@ export class PlayScene extends Phaser.Scene {
     update(time : number, delta : number) : void {
         delta /= 1000;
         this.edgeRender.clear();
-        this.edgeRender.lineStyle(5, 0x70161E);
+        this.edgeRender.lineStyle(2, 0x70161E);
 
         this.strongbad.update(time, delta);
         this.player.update(time, delta);
