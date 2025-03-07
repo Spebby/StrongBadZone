@@ -3,13 +3,19 @@ import { Math as pMath } from 'phaser';
 import { SoundMan } from '../soundman';
 import { KeyMap } from '../keymap';
 import { PlayScene } from '../scenes/Play'
+import { UIConfig } from '../config';
 
 const { asin, PI } = Math;
 
-var hWidth : number;
+export function mapRange(x : number, a : number, b : number, offset : number) : number {
+    const start = a + offset;
+    const end = b - offset;
+    return start + ((x - a) * (end - start) / (b - a));
+}
+
 export class Player extends GameObjects.GameObject {
     private baseSpeed : number;
-    private drag : number = 0.95;
+    private drag : number = 0.75;
     private blockTime  : number;
     private blockDelay : number;
 
@@ -18,7 +24,7 @@ export class Player extends GameObjects.GameObject {
 
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
-    private acceleration : pMath.Vector2;
+    private reflectDir : pMath.Vector2;
 
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
@@ -33,15 +39,15 @@ export class Player extends GameObjects.GameObject {
 
         this.position = new pMath.Vector2(x, y);
         this.velocity = new pMath.Vector2(0, 0);
-        this.acceleration = new pMath.Vector2(0, 0);
+        this.reflectDir = new pMath.Vector2(0,0);
 
         this.debugGraphics = (scene as PlayScene).edgeRender;
 
         KeyMap.keyLEFT.onDown = () => {
-            this.acceleration.x = -baseSpeed;
+            this.velocity.x = -baseSpeed;
         }
         KeyMap.keyRIGHT.onDown = () => {
-            this.acceleration.x = baseSpeed;
+            this.velocity.x = baseSpeed;
         }
 
         Object.entries(KeyMap.keyShield).forEach(([side, key]) => {
@@ -60,9 +66,7 @@ export class Player extends GameObjects.GameObject {
     * @ref https://docs.phaser.io/api-documentation/event/scenes-events#update
     */
     update(time : number, delta : number) : void {
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, hWidth/4);
         if ( 0 < this.shieldTime ) {
-            this.acceleration.x = 0; this.acceleration.y = 0;
             this.velocity.x = 0; this.velocity.y = 0;
             if (!KeyMap.isShielding()) {
                 this.unblock();
@@ -77,14 +81,16 @@ export class Player extends GameObjects.GameObject {
         }
 
         this.shieldDelay -= delta;
-        this.acceleration.scale(this.drag);
-        this.velocity.x += this.acceleration.x * delta;
-        this.velocity.y += this.acceleration.y * delta;
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
+        this.velocity.scale(this.drag);
         this.mesh.x = this.position.x;
-        this.mesh.y = this.position.y;
-    
+        this.mesh.y = this.position.y;this.debugGraphics.strokePoints([(this.position.x, this.position.y), (this.position.x + this.reflectDir.x, this.position.y + this.reflectDir.y)], false);
+
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth/4);
+        this.debugGraphics.strokePoints([
+            {x: this.position.x, y: this.position.y}, 
+            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * 150}], false);
     }
 
     block(side : string) {
@@ -92,18 +98,22 @@ export class Player extends GameObjects.GameObject {
             return;
         }
 
+        var reflect = new pMath.Vector2(0, UIConfig.hHeight);
         switch (side) {
             case 'L':
-
+                reflect.x = -reflect.y;
                 break;
             case 'C':
-
+                reflect.x = 0;
                 break;
             case 'R':
-
+                reflect.x = reflect.y;
                 break;
         }
 
+        reflect.x = mapRange((reflect.x + this.position.x), 0, UIConfig.hWidth * 2, UIConfig.hWidth / 2) - this.position.x;
+        reflect.normalize();
+        this.reflectDir = reflect;
         this.shieldTime = this.blockTime;
     }
 

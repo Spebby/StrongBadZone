@@ -2,8 +2,8 @@ import { GameObjects, Physics } from 'phaser';
 import { Math as pMath } from 'phaser';
 import { Player } from './player';
 import { PlayScene } from '../scenes/Play';
+import { UIConfig } from '../config';
 
-var hWidth : number;
 export class Strongbad extends GameObjects.GameObject {
     private baseSpeed  : number;
     private travelDist : number;
@@ -13,7 +13,6 @@ export class Strongbad extends GameObjects.GameObject {
 
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
-    private projectiles : Projectile[];
 
 
     mesh : GameObjects.Mesh;
@@ -21,7 +20,6 @@ export class Strongbad extends GameObjects.GameObject {
     private playerRef : Player;
 
     constructor(scene : Phaser.Scene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, travelDist : number, fireDelay : number, onHitEvent : () => void) {
-        hWidth = x;
         super(scene, 'strongbadGameObject');
         this.mesh = mesh;
         this.position = new pMath.Vector2(x, y);
@@ -32,7 +30,6 @@ export class Strongbad extends GameObjects.GameObject {
         this.fireDelay  = fireDelay * 1.33;
         this.fireTimer  = fireDelay * 0.1;
         this.onHitEvent = onHitEvent;
-        this.projectiles = [];
 
         scene.add.existing(this);
 
@@ -47,9 +44,9 @@ export class Strongbad extends GameObjects.GameObject {
         this.position.y += this.velocity.y * delta;
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, hWidth/4);
-        if (this.position.x < (hWidth - this.travelDist) || (this.travelDist + hWidth) < this.position.x) {
-            this.position.x += this.position.x < hWidth ? delta * 2 : -delta * 2;
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth/4);
+        if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
+            this.position.x += this.position.x < UIConfig.hWidth ? delta * 2 : -delta * 2;
             this.velocity.x *= -1;
         }
 

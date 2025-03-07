@@ -30,7 +30,9 @@ export const GameConfig : Phaser.Types.Core.GameConfig = {
     render: { pixelArt: true }
 };
 
-export const UIConfig : { borderUISize: number, borderPadding: number } = {
+export const UIConfig : { borderUISize: number, borderPadding: number, hWidth : number, hHeight : number } = {
     borderUISize:   (parseInt(GameConfig.scale.height as string) || window.innerHeight) / 15,
-    borderPadding: ((parseInt(GameConfig.scale.height as string) || window.innerHeight) / 15) / 3
+    borderPadding: ((parseInt(GameConfig.scale.height as string) || window.innerHeight) / 15) / 3,
+    hWidth: parseInt(GameConfig.scale.width as string) / 2,
+    hHeight: parseInt(GameConfig.scale.height as string) / 2
 };
