@@ -14,7 +14,6 @@ export class Strongbad extends GameObjects.GameObject {
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
 
-
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
     private playerRef : Player;
@@ -55,16 +54,17 @@ export class Strongbad extends GameObjects.GameObject {
         Projectile.updateAll(time, delta);
     }
 
-    firePerplexingAttack() {
+    firePerplexingAttack() : void {
         if (0 < this.fireTimer) {
             return;
         }
 
         this.fireTimer = this.fireDelay;
-        const proj = new Projectile(this.scene, this.position.x, this.position.y + 100, this.mesh.z, this.playerRef.getPosition(), 200);
+        const proj = new Projectile(this.scene, this.position.x, this.position.y + targetVertOffset, this.mesh.z, this.playerRef.getPosition(), 200);
     }
 }
 
+var targetVertOffset = 100;
 export class Projectile extends GameObjects.Container {
     private static projectiles : Projectile[] = [];
     mesh : GameObjects.Mesh;
@@ -72,6 +72,9 @@ export class Projectile extends GameObjects.Container {
     private target : pMath.Vector2;
     private velocity : pMath.Vector2;
     private speed : number;
+    private get radius() : number {
+        return this.mesh.scale / 2;
+    }
 
     constructor(scene : Phaser.Scene, x : number, y : number, z : number, target : pMath.Vector2, speed : number) {
         super(scene, x, y);
@@ -101,13 +104,17 @@ export class Projectile extends GameObjects.Container {
         Projectile.projectiles.push(this);
     }
 
-    destroy() {
+    destroy() : void {
         this.mesh.destroy();
         const index = Projectile.projectiles.indexOf(this);
         if (index !== -1) {
             Projectile.projectiles.splice(index, 1);
         }
         super.destroy();
+    }
+
+    offscreen() : void {
+        this.destroy();
     }
 
     update(time : number, delta : number) {
@@ -122,13 +129,44 @@ export class Projectile extends GameObjects.Container {
 
         // todo: rewrite this to scale to max once y = target y.
 
+        // eventually rewrite this such that
+        // we account for hitting strongbad
         if (this.y >= this.target.y) {
-            this.destroy();
-            // do a collision check
-            // if player is gaurding, reverse direction
-            //
-            // if hit strongbad, idk yet!
+            // collision check
+            const player = (this.scene as PlayScene).player;
+            if (!this.isHitting(player)) {
+                if ((UIConfig.hHeight * 2) + 100 < this.y) {
+                    this.offscreen();
+                }
+                return;
+            }
+
+            const blocking : boolean = player.isBlocking();
+            if (!blocking) {
+                //player.kill();
+                this.destroy();
+                return;
+            }
+            // maybe force player to unblock?
+
+            var r : pMath.Vector2 = player.getReflectDir();
+            this.target.set(0, 0);
+
+            // new V = <sign(r.x) V/|V| * r, r.y>
+            this.velocity = new pMath.Vector2(Math.sign(r.x) * (this.velocity.scale(1 / this.velocity.length()).dot(r)), r.y).normalize();
         }
+    }
+
+    private isHitting(obj : Player) : boolean {
+        /*
+        if (obj !== Player || obj !== Strongbad) {
+            console.error(`${obj} is not an acceptable collision target!`);
+        }
+        */
+        var pPos = obj.getPosition();
+        var pos = new pMath.Vector2(this.x, this.y);
+        var sdf = pPos.distance(pos) - obj.radius;
+        return sdf < this.radius;
     }
 
     static updateAll(time : number, delta : number) {

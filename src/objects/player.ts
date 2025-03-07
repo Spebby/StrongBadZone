@@ -26,6 +26,7 @@ export class Player extends GameObjects.GameObject {
     private velocity : pMath.Vector2;
     private reflectDir : pMath.Vector2;
 
+    radius : number = UIConfig.hWidth / 5;
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
 
@@ -67,7 +68,7 @@ export class Player extends GameObjects.GameObject {
     */
     update(time : number, delta : number) : void {
         if ( 0 < this.shieldTime ) {
-            this.velocity.x = 0; this.velocity.y = 0;
+            this.velocity.set(0, 0);
             if (!KeyMap.isShielding()) {
                 this.unblock();
                 return;
@@ -85,36 +86,32 @@ export class Player extends GameObjects.GameObject {
         this.position.y += this.velocity.y * delta;
         //this.velocity.scale(this.drag);
 
-        if (this.position.x <= UIConfig.hWidth / 5) {
-            this.position.x = UIConfig.hWidth / 5 + delta;
-        } else if (((UIConfig.hWidth * 2) - UIConfig.hWidth / 5) <= this.position.x) {
-            this.position.x = ((UIConfig.hWidth * 2) - (UIConfig.hWidth / 5)) - delta;
-        }
+        this.position.x = pMath.Clamp(this.position.x, this.radius, (UIConfig.hWidth * 2) - this.radius);
 
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
 
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth / 5);
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         this.debugGraphics.strokePoints([
             {x: this.position.x, y: this.position.y}, 
-            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * 150}], false);
+            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}], false);
     }
 
     block(side : string) {
-        if (0 < this.shieldTime) {
+        if (0 < this.shieldTime || 0 < this.shieldDelay) {
             return;
         }
 
-        var reflect = new pMath.Vector2(0, UIConfig.hHeight);
+        var reflect = new pMath.Vector2(0, -UIConfig.hHeight);
         switch (side) {
             case 'L':
-                reflect.x = -reflect.y;
+                reflect.x = reflect.y;
                 break;
             case 'C':
                 reflect.x = 0;
                 break;
             case 'R':
-                reflect.x = reflect.y;
+                reflect.x = -reflect.y;
                 break;
         }
 
@@ -127,9 +124,18 @@ export class Player extends GameObjects.GameObject {
     unblock() {
         this.shieldTime = 0;
         this.shieldDelay = this.blockDelay;
+        this.reflectDir.set(0, 0);
     }
 
-    getPosition() {
+    getPosition() : pMath.Vector2 {
         return this.position.clone();
+    }
+
+    isBlocking() : boolean {
+        return (0 < this.shieldTime);
+    }
+
+    getReflectDir() : pMath.Vector2 {
+        return this.reflectDir.clone();
     }
 }
