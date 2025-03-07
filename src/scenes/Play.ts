@@ -37,7 +37,7 @@ export class PlayScene extends Phaser.Scene {
         const strongmesh = this.add.mesh(hWidth, hHeight, 'blank');
 
         room.addVerticesFromObj('room', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
-        playermesh.addVerticesFromObj('player', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
+        playermesh.addVerticesFromObj('player', 0.8, 0, 0.2, 0, 0, pMath.DegToRad(-90), 0);
         strongmesh.addVerticesFromObj('strongbad', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
 
         this.edgeRender = this.add.graphics();
@@ -47,14 +47,13 @@ export class PlayScene extends Phaser.Scene {
 
         room.panZ(-10);
         room.setOrtho(6.2, 4.6);
-        //strongmesh.panZ(-10);
+        strongmesh.panZ(10);
         strongmesh.z -= 10;
         strongmesh.setOrtho(6.2, 4.6);
-        //playermesh.panZ(-5);
         playermesh.setOrtho(6.2, 4.6);
 
         this.player = new Player(this, hWidth, hHeight * 2 - 100, playermesh, 200, 2, 1);
-        this.strongbad = new Strongbad(this, hWidth, hHeight - 175, strongmesh, 50, 200, 4, null);
+        this.strongbad = new Strongbad(this, hWidth, hHeight - 175, strongmesh, 125, 200, 4, null);
         this.input.on('pointermove', (pointer : Phaser.Input.Pointer) => {
             if (!pointer.isDown) return;
             room.modelRotation.y += pointer.velocity.x / 800;

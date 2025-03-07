@@ -44,7 +44,7 @@ export class Strongbad extends GameObjects.GameObject {
         this.position.y += this.velocity.y * delta;
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth/4);
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth / 5);
         if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
             this.position.x += this.position.x < UIConfig.hWidth ? delta * 2 : -delta * 2;
             this.velocity.x *= -1;
@@ -61,7 +61,7 @@ export class Strongbad extends GameObjects.GameObject {
         }
 
         this.fireTimer = this.fireDelay;
-        const proj = new Projectile(this.scene, this.position.x, this.position.y, this.mesh.z, this.playerRef.getPosition(), 200);
+        const proj = new Projectile(this.scene, this.position.x, this.position.y + 100, this.mesh.z, this.playerRef.getPosition(), 200);
     }
 }
 
@@ -78,6 +78,7 @@ export class Projectile extends GameObjects.Container {
         this.z = z;
 
         this.target = target.clone();
+        this.target.y -= 100;
         this.velocity = target.subtract(new pMath.Vector2(x, y)).normalize();
         this.speed = speed;
 

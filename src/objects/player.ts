@@ -78,16 +78,23 @@ export class Player extends GameObjects.GameObject {
             if (this.shieldTime < 0) {
                 this.unblock();
             }
-        }
+        } 
 
         this.shieldDelay -= delta;
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
-        this.velocity.scale(this.drag);
-        this.mesh.x = this.position.x;
-        this.mesh.y = this.position.y;this.debugGraphics.strokePoints([(this.position.x, this.position.y), (this.position.x + this.reflectDir.x, this.position.y + this.reflectDir.y)], false);
+        //this.velocity.scale(this.drag);
 
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth/4);
+        if (this.position.x <= UIConfig.hWidth / 5) {
+            this.position.x = UIConfig.hWidth / 5 + delta;
+        } else if (((UIConfig.hWidth * 2) - UIConfig.hWidth / 5) <= this.position.x) {
+            this.position.x = ((UIConfig.hWidth * 2) - (UIConfig.hWidth / 5)) - delta;
+        }
+
+        this.mesh.x = this.position.x;
+        this.mesh.y = this.position.y;
+
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth / 5);
         this.debugGraphics.strokePoints([
             {x: this.position.x, y: this.position.y}, 
             {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * 150}], false);
