@@ -1,5 +1,6 @@
-import { GameObjects, Physics } from 'phaser';
+import { GameObjects } from 'phaser';
 import { Math as pMath } from 'phaser';
+import { IEntity } from './entity';
 import { SoundMan } from '../soundman';
 import { KeyMap } from '../keymap';
 import { PlayScene } from '../scenes/Play'
@@ -13,7 +14,7 @@ export function mapRange(x : number, a : number, b : number, offset : number) : 
     return start + ((x - a) * (end - start) / (b - a));
 }
 
-export class Player extends GameObjects.GameObject {
+export class Player extends GameObjects.GameObject implements IEntity {
     private baseSpeed : number;
     private drag : number = 0.75;
     private blockTime  : number;
@@ -45,10 +46,10 @@ export class Player extends GameObjects.GameObject {
         this.debugGraphics = (scene as PlayScene).edgeRender;
 
         KeyMap.keyLEFT.onDown = () => {
-            this.velocity.x = -baseSpeed;
+            this.velocity.x = -this.baseSpeed;
         }
         KeyMap.keyRIGHT.onDown = () => {
-            this.velocity.x = baseSpeed;
+            this.velocity.x = this.baseSpeed;
         }
 
         Object.entries(KeyMap.keyShield).forEach(([side, key]) => {
@@ -97,7 +98,11 @@ export class Player extends GameObjects.GameObject {
             {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}], false);
     }
 
-    block(side : string) {
+    // TODO: revise the clamping logic for the sideways angles
+    // so that they are less affected by the clamp when closer
+    // to their respective edge (the behaviour of pointing to the corner)
+    // is unhelpful and can't be easily telegraphed in the final verison.
+    block(side : string) : void {
         if (0 < this.shieldTime || 0 < this.shieldDelay) {
             return;
         }
@@ -121,10 +126,17 @@ export class Player extends GameObjects.GameObject {
         this.shieldTime = this.blockTime;
     }
 
-    unblock() {
+    unblock() : void {
         this.shieldTime = 0;
         this.shieldDelay = this.blockDelay;
         this.reflectDir.set(0, 0);
+    }
+
+    /**
+    * @abstract Kills the player.
+    */
+    damage() : void {
+        return;
     }
 
     getPosition() : pMath.Vector2 {

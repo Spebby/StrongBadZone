@@ -1,10 +1,12 @@
-import { GameObjects, Physics } from 'phaser';
+import { GameObjects } from 'phaser';
 import { Math as pMath } from 'phaser';
+import { IEntity } from './entity';
 import { Player } from './player';
 import { PlayScene } from '../scenes/Play';
 import { UIConfig } from '../config';
+import { SoundMan } from '../soundman';
 
-export class Strongbad extends GameObjects.GameObject {
+export class Strongbad extends GameObjects.GameObject implements IEntity {
     private baseSpeed  : number;
     private travelDist : number;
     private fireDelay : number;
@@ -13,6 +15,8 @@ export class Strongbad extends GameObjects.GameObject {
 
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
+
+    radius : number;
 
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
@@ -30,11 +34,14 @@ export class Strongbad extends GameObjects.GameObject {
         this.fireTimer  = fireDelay * 0.1;
         this.onHitEvent = onHitEvent;
 
+        Projectile.strongbad = this;
+
         scene.add.existing(this);
 
         this.playerRef = (scene as PlayScene).player;
         this.debugGraphics = (scene as PlayScene).edgeRender;
         this.velocity.x = this.baseSpeed;
+        this.radius = UIConfig.hWidth / 5;
     }
 
     update(time : number, delta : number) : void {
@@ -43,7 +50,7 @@ export class Strongbad extends GameObjects.GameObject {
         this.position.y += this.velocity.y * delta;
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, UIConfig.hWidth / 5);
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
             this.position.x += this.position.x < UIConfig.hWidth ? delta * 2 : -delta * 2;
             this.velocity.x *= -1;
@@ -60,7 +67,17 @@ export class Strongbad extends GameObjects.GameObject {
         }
 
         this.fireTimer = this.fireDelay;
-        const proj = new Projectile(this.scene, this.position.x, this.position.y + targetVertOffset, this.mesh.z, this.playerRef.getPosition(), 200);
+        new Projectile(this.scene, this.position.x, this.position.y + targetVertOffset, this.mesh.z, this.playerRef.getPosition(), 200);
+        SoundMan.play('shoot');
+    }
+
+    // TODO: implement
+    damage() : void {
+        return;
+    }
+
+    getPosition() : pMath.Vector2 {
+        return this.position.clone();
     }
 }
 
@@ -72,6 +89,7 @@ function calculateSize(t : number, low : number, high : number, start : number, 
 var targetVertOffset = 100;
 export class Projectile extends GameObjects.Container {
     private static projectiles : Projectile[] = [];
+    static strongbad : Strongbad;
     mesh : GameObjects.Mesh;
     //private position : pMath.Vector2;
     private initY  : number;
@@ -122,8 +140,9 @@ export class Projectile extends GameObjects.Container {
         super.destroy();
     }
 
-    offscreen() : void {
+    impact() : void {
         this.destroy();
+        SoundMan.play('impact');
     }
 
     update(time : number, delta : number) {
@@ -145,14 +164,14 @@ export class Projectile extends GameObjects.Container {
             const player = (this.scene as PlayScene).player;
             if (!this.isHitting(player)) {
                 if ((UIConfig.hHeight * 2) + 100 < this.y) {
-                    this.offscreen();
+                    this.destroy();
                 }
                 return;
             }
 
             const blocking : boolean = player.isBlocking();
             if (!blocking) {
-                //player.kill();
+                player.damage();
                 this.destroy();
                 return;
             }
@@ -163,10 +182,10 @@ export class Projectile extends GameObjects.Container {
             // todo: revise this b/c it doesn't always behave as expected
             // new V = <sign(r.x) V/|V| * r, r.y>
             this.velocity = new pMath.Vector2(Math.sign(r.x) * (this.velocity.scale(1 / this.velocity.length()).dot(r)), r.y).normalize();
-        } else if (this.y <= this.wall) { // bc phaser is stupidi
+        } else if (this.y <= this.wall) { // bc phaser is stupid
             // hit strongbad
 
-            this.destroy();
+            this.impact();
             return;
         }
 
@@ -179,19 +198,15 @@ export class Projectile extends GameObjects.Container {
             var side = Math.sign(this.velocity.x);
             this.y += offset;
             this.x += offset * side;
+            SoundMan.play('ricochet');
         }
 
     }
 
-    private isHitting(obj : Player) : boolean {
-        /*
-        if (obj !== Player || obj !== Strongbad) {
-            console.error(`${obj} is not an acceptable collision target!`);
-        }
-        */
-        var pPos = obj.getPosition();
-        var pos = new pMath.Vector2(this.x, this.y);
-        var sdf = pPos.distance(pos) - obj.radius;
+    private isHitting(entity : IEntity) : boolean {
+        var pPos = entity.getPosition();
+        var pos  = new pMath.Vector2(this.x, this.y);
+        var sdf  = pPos.distance(pos) - entity.radius;
         return sdf < this.radius;
     }
 
