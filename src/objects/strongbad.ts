@@ -64,11 +64,18 @@ export class Strongbad extends GameObjects.GameObject {
     }
 }
 
+
+function calculateSize(t : number, low : number, high : number, start : number, end : number) : number {
+    return (t * ((high - low) / (start - end))) + low;
+}
+
 var targetVertOffset = 100;
 export class Projectile extends GameObjects.Container {
     private static projectiles : Projectile[] = [];
     mesh : GameObjects.Mesh;
     //private position : pMath.Vector2;
+    private initY  : number;
+    private wall   : number;
     private target : pMath.Vector2;
     private velocity : pMath.Vector2;
     private speed : number;
@@ -81,7 +88,9 @@ export class Projectile extends GameObjects.Container {
         this.z = z;
 
         this.target = target.clone();
-        this.target.y -= 100;
+        this.target.y -= targetVertOffset;
+        this.initY = y;
+        this.wall  = y - targetVertOffset;
         this.velocity = target.subtract(new pMath.Vector2(x, y)).normalize();
         this.speed = speed;
 
@@ -125,7 +134,7 @@ export class Projectile extends GameObjects.Container {
         this.z += delta;
         this.mesh.z += delta / 2;
         this.mesh.panZ(-delta / 2);
-        this.mesh.scale += delta * this.speed / 20;
+        this.mesh.scale = calculateSize(this.y, 8, 35, this.initY, this.target.y);
 
         // todo: rewrite this to scale to max once y = target y.
 
@@ -150,11 +159,28 @@ export class Projectile extends GameObjects.Container {
             // maybe force player to unblock?
 
             var r : pMath.Vector2 = player.getReflectDir();
-            this.target.set(0, 0);
 
+            // todo: revise this b/c it doesn't always behave as expected
             // new V = <sign(r.x) V/|V| * r, r.y>
             this.velocity = new pMath.Vector2(Math.sign(r.x) * (this.velocity.scale(1 / this.velocity.length()).dot(r)), r.y).normalize();
+        } else if (this.y <= this.wall) { // bc phaser is stupidi
+            // hit strongbad
+
+            this.destroy();
+            return;
         }
+
+        const a = 440;
+        const b = 750
+        const wall = ((b - a)/(380)) * this.x;
+        if ((this.x < 380 && this.y < -wall + b) || (1065 < this.x && this.y < wall - a)) {
+            var offset = 5;
+            this.velocity.x *= -1;
+            var side = Math.sign(this.velocity.x);
+            this.y += offset;
+            this.x += offset * side;
+        }
+
     }
 
     private isHitting(obj : Player) : boolean {
