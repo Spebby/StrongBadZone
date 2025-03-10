@@ -88,11 +88,15 @@ export class SoundMan {
     }
  
     static play(key : string) : void {
-        SoundMan.scene.sound.play(SoundMan.getSound(key).getID());        
+        var sound = SoundMan.getSound(key);
+        if (!sound) return;
+        SoundMan.scene.sound.play(sound.getID());        
     }
 
     static playUnweight(key : string) : void {
-        SoundMan.scene.sound.play(SoundMan.getSoundUnweight(key).getID());
+        var sound = SoundMan.getSoundUnweight(key);
+        if (!sound) return;
+        SoundMan.scene.sound.play(sound.getID());
     }
 
     // Get a random sound based on the weight of each sound

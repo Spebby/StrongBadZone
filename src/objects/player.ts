@@ -28,10 +28,11 @@ export class Player extends GameObjects.GameObject implements IEntity {
     private reflectDir : pMath.Vector2;
 
     radius : number = UIConfig.hWidth / 5;
+    health : number = 1;
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
 
-    constructor(scene : Phaser.Scene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, blockDuration : number, blockDelay : number) {
+    constructor(scene : PlayScene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, blockDuration : number, blockDelay : number) {
         super(scene, 'playerGameObject');
 
         this.baseSpeed = baseSpeed;
@@ -127,8 +128,9 @@ export class Player extends GameObjects.GameObject implements IEntity {
     }
 
     unblock() : void {
+        this.shieldDelay = (0.9 * ((this.blockTime - this.shieldTime)/this.blockTime) + 0.1) * this.blockDelay;
         this.shieldTime = 0;
-        this.shieldDelay = this.blockDelay;
+        // applys a proportional shield delay based on shield used; can't be cutoff b/c spam blocking would become meta.
         this.reflectDir.set(0, 0);
     }
 
@@ -136,6 +138,8 @@ export class Player extends GameObjects.GameObject implements IEntity {
     * @abstract Kills the player.
     */
     damage() : void {
+        (this.scene as PlayScene).endGame();
+        
         return;
     }
 
