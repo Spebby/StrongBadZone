@@ -19,7 +19,7 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
     private paused : boolean = false;
 
     radius : number;
-    health : number = 5;
+    health : number = 7;
 
     mesh : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
@@ -134,7 +134,8 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         this.baseSpeed *= 1.18;
         this.bulletSpeed *= 1.15;
         this.velocity.x *= 1.11;
-        this.fireTimer = this.fireDelay *= 0.8;
+        this.fireDelay *= 0.75;
+        this.fireTimer = 0.5;
         this.health--;
         return;
     }
@@ -236,15 +237,13 @@ export class Projectile extends GameObjects.Container {
             const player = (this.scene as PlayScene).player;
             if (!this.isHitting(player)) {
                 if ((UIConfig.hHeight * 2) + 100 < this.y) {
-                    player.damage();
-                    this.impact();
+                    this.destroy();
                 }
                 return;
             }
 
             const blocking : boolean = player.isBlocking();
             if (!blocking) {
-                player.damage();
                 this.destroy();
                 return;
             }
@@ -260,6 +259,8 @@ export class Projectile extends GameObjects.Container {
             // hit strongbad
             if (this.isHitting(Projectile.strongbad)) {
                 Projectile.strongbad.damage();
+                this.destroy();
+                return;
             }
 
             this.impact();

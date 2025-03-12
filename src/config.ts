@@ -1,5 +1,5 @@
 import { Preload } from './scenes/Preload';
-//import { MenuScene } from './scenes/Menu';
+import { MenuScene } from './scenes/Menu';
 import { PlayScene } from './scenes/Play';
 import { UIScene }   from './scenes/UI';
 
@@ -23,7 +23,7 @@ export const GameConfig : Phaser.Types.Core.GameConfig = {
             debug: true
         }
     },
-    scene: [Preload, PlayScene, UIScene],
+    scene: [Preload, MenuScene, PlayScene, UIScene],
     input: {
         keyboard: true
     },

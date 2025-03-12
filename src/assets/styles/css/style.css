@@ -6,11 +6,6 @@ body {
 }
 
 @font-face {
-    font-family: 'Chillen';
-    src: url('../../fonts/Chillen.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'HapolePencil';
-    src: url('../../fonts/hapole_pencil.ttf') format('truetype');
+    font-family: 'JBM';
+    src: url('../../fonts/JetBrainsMono.ttf') format('truetype');
 }

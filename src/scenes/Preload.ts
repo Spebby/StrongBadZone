@@ -30,6 +30,7 @@ export class Preload extends Phaser.Scene {
         SoundMan.add('pop',  'sfx/pop.wav');
         SoundMan.add('fall', 'sfx/fall.wav');
         SoundMan.add('gameOver', 'sfx/gameOver.wav');
+        SoundMan.add('typing', 'sfx/typingDing.wav');
         SoundMan.importJSON('soundData.json');
     }
 
@@ -45,6 +46,6 @@ export class Preload extends Phaser.Scene {
             }
         }
 
-        this.scene.start('PlayScene');
+        this.scene.start('MenuScene');
     }
 }
