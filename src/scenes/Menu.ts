@@ -13,7 +13,8 @@ export class MenuScene extends Phaser.Scene {
     private text    : Phaser.GameObjects.Text;
     private menu    : Phaser.GameObjects.Container;
     private overlay : Phaser.GameObjects.Container;
-
+    private creditsOverlay : Phaser.GameObjects.Container;
+    
     private typeDelay : number;
 
     // typing shiiii
@@ -36,11 +37,11 @@ export class MenuScene extends Phaser.Scene {
 
         // menu container
         let playText = this.add.text(0, 0, "PLAY", gConst.settingsConfig).setOrigin(0.5);
-        let textScale = playText.scale;
+        let pScale = playText.scale;
         playText.on('pointerover', () => {
             this.tweens.add({
                 targets: playText,
-                scale: textScale * 1.1,
+                scale: pScale * 1.1,
                 duration: 200,
                 ease: 'Power2'
             });
@@ -49,7 +50,7 @@ export class MenuScene extends Phaser.Scene {
         playText.on('pointerout', () => {
             this.tweens.add({
                 targets: playText,
-                scale: textScale,
+                scale: pScale,
                 duration: 200,
                 ease: 'Power2'
             });
@@ -59,11 +60,78 @@ export class MenuScene extends Phaser.Scene {
             this.changeScene('PlayScene');
         });
 
-        menu.add([playText]);
+        let tutorialText = this.add.text(0, 128, "HOW TO PLAY", gConst.settingsConfig).setOrigin(0.5);
+        let ttScale = tutorialText.scale;
+        tutorialText.on('pointerover', () => {
+            this.tweens.add({
+                targets: tutorialText,
+                scale: ttScale * 1.1,
+                duration: 200,
+                ease: 'Power2'
+            });
+        });
+
+        tutorialText.on('pointerout', () => {
+            this.tweens.add({
+                targets: tutorialText,
+                scale: ttScale,
+                duration: 200,
+                ease: 'Power2'
+            });
+        });
+
+        tutorialText.setInteractive().on('pointerdown', () => {
+            this.changeScene('PlayScene');
+        });
+
+        let creditText = this.add.text(0, 256, "CREDITS", gConst.settingsConfig).setOrigin(0.5);
+        let cScale = creditText.scale;
+        creditText.on('pointerover', () => {
+            this.tweens.add({
+                targets: creditText,
+                scale: cScale * 1.1,
+                duration: 200,
+                ease: 'Power2'
+            });
+        });
+
+        creditText.on('pointerout', () => {
+            this.tweens.add({
+                targets: creditText,
+                scale: cScale,
+                duration: 200,
+                ease: 'Power2'
+            });
+        });
+
+        creditText.setInteractive().on('pointerdown', () => {
+            this.creditsOverlay.setVisible(!this.creditsOverlay.visible);
+        });
+
+        KeyMap.keyEXIT.onDown = () => {
+            if (this.creditsOverlay.visible) {
+                this.creditsOverlay.setVisible(false);
+            }
+        }
+
+        menu.add([playText, tutorialText, creditText]);
 
         this.menu = menu;
         this.menu.setVisible(false);
         this.typeText(gConst.menuText);
+
+
+        // Credits Overlay
+        this.creditsOverlay = this.add.container(hWidth, hHeight);
+
+        var rect = this.add.rectangle(0, 0, hWidth * 2, hHeight * 2, 0, 1).setOrigin(0.5);
+
+        // If I have time, make the game type this.
+        var credits = this.add.text(0, 0, "Programming & Art by Thom 'Spebby' Mott\n\nOriginal Source Homestar Runner\nPhaser 3 TypeScript template by digitsensitive", gConst.settingsConfig).setOrigin(0.5);
+        var creditsPrompt = this.add.text(0, credits.displayHeight - 64, "PRESS ESCAPE TO RETURN", gConst.settingsConfig).setOrigin(0.5).setScale(0.5);
+
+        this.creditsOverlay.add([rect, credits, creditsPrompt]);
+        this.creditsOverlay.setVisible(false);
     }
 
 
@@ -74,7 +142,7 @@ export class MenuScene extends Phaser.Scene {
         // Render Text
         this.typeDelay -= delta;
         if (this.charWritten >= this.passage.length || 0 < this.typeDelay) return;
-        
+
         let start = this.charWritten;
         let end = start;
         let chunk = "";
