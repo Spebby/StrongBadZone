@@ -35,100 +35,56 @@ export class MenuScene extends Phaser.Scene {
         var menu  = this.add.container(UIConfig.hWidth, UIConfig.hHeight - (UIConfig.hHeight / 16));
 
         // menu container
-        let playText = this.add.text(0, 0, "PLAY", gConst.settingsConfig).setOrigin(0.5);
-        let pScale = playText.scale;
-        playText.on('pointerover', () => {
-            this.tweens.add({
-                targets: playText,
-                scale: pScale * 1.1,
-                duration: 200,
-                ease: 'Power2'
+        var list : GameObjects.GameObject[] = [];
+        const createTextButton = (x : number, y : number, text : string, config : any, onClick : () => void, list : GameObjects.GameObject[]) => {
+            let txt = this.add.text(x, y, text, config).setOrigin();
+            let oSc = txt.scale;
+            txt.on('pointerover', () => {
+                this.tweens.add({
+                    targets: txt,
+                    scale: oSc * 1.1,
+                    duration: 200,
+                    ease: 'Power2'
+                });
             });
-        });
-
-        playText.on('pointerout', () => {
-            this.tweens.add({
-                targets: playText,
-                scale: pScale,
-                duration: 200,
-                ease: 'Power2'
+            txt.on('pointerout', () => {
+                this.tweens.add({
+                    targets: txt,
+                    scale: oSc,
+                    duration: 200,
+                    ease: 'Power2'
+                });
             });
-        });
+            txt.setInteractive().on('pointerdown', onClick);
+            list.push(txt);
+        }
 
-        playText.setInteractive().on('pointerdown', () => {
-            this.changeScene('PlayScene');
-        });
+        createTextButton(0, 0,   "PLAY", gConst.settingsConfig, () => {
+            this.changeScene('PlayScene')
+        }, list);
+        createTextButton(0, 128, "HOW TO PLAY", gConst.settingsConfig, () => {
 
-        let tutorialText = this.add.text(0, 128, "HOW TO PLAY", gConst.settingsConfig).setOrigin(0.5);
-        let ttScale = tutorialText.scale;
-        tutorialText.on('pointerover', () => {
-            this.tweens.add({
-                targets: tutorialText,
-                scale: ttScale * 1.1,
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        tutorialText.on('pointerout', () => {
-            this.tweens.add({
-                targets: tutorialText,
-                scale: ttScale,
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        tutorialText.setInteractive().on('pointerdown', () => {
-            this.changeScene('PlayScene');
-        });
-
-        let creditText = this.add.text(0, 256, "CREDITS", gConst.settingsConfig).setOrigin(0.5);
-        let cScale = creditText.scale;
-        creditText.on('pointerover', () => {
-            this.tweens.add({
-                targets: creditText,
-                scale: cScale * 1.1,
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        creditText.on('pointerout', () => {
-            this.tweens.add({
-                targets: creditText,
-                scale: cScale,
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        creditText.setInteractive().on('pointerdown', () => {
+        }, list);
+        createTextButton(0, 256, "CREDITS", gConst.settingsConfig, () => {
             this.creditsOverlay.setVisible(!this.creditsOverlay.visible);
-        });
+        }, list);
+
+        menu.add(list);
+        this.menu = menu;
+        this.menu.setVisible(false);
 
         KeyMap.keyEXIT.onDown = () => {
             if (this.isTyping) {
                 this.textTimer.paused = true;
                 this.playTypeSound = false;
-                let remaining = this.textTimer.getRepeatCount();
-                
-                for (let i = 0; i < remaining; i++) {
-                    this.textTimer.callback();
-                }
-
-                this.playTypeSound = true;
                 this.textTimerComplete.remove(true);
+                this.playTypeSound = true;
             }
 
             if (this.creditsOverlay.visible) {
                 this.creditsOverlay.setVisible(false);
             }
         }
-
-        menu.add([playText, tutorialText, creditText]);
-        this.menu = menu;
-        this.menu.setVisible(false);
 
 
         // Credits Overlay
@@ -143,7 +99,7 @@ export class MenuScene extends Phaser.Scene {
         this.creditsOverlay.setVisible(false);
 
         // Start Typing
-        this.printText(gConst.menuText, this.text, this.TriggerMenu);
+        this.printText(gConst.menuText, this.text, this.triggerMenu.bind(this));
     }
 
 
@@ -156,7 +112,7 @@ export class MenuScene extends Phaser.Scene {
         this.scene.start(key);
     }
 
-    TriggerMenu() : void {
+    triggerMenu() : void {
         this.menu.setVisible(true);
     }
 
@@ -176,13 +132,13 @@ export class MenuScene extends Phaser.Scene {
         this.isTyping = true;
         dialog.text = '';
         let currentChar = 0;
-        let offset = Math.round(str.length * 0.01);
+        let offset = Math.round(str.length * 0.001);
         this.textTimer = this.time.addEvent({
             delay: this.typeDelay,
-            repeat: dialog.text.length - 1,
+            repeat: (str.length - 1) / Math.max(1, offset),
             callback: () => { 
                 dialog.text += str.substring(currentChar, currentChar + offset);
-                currentChar += offset++;
+                currentChar += offset;
                 if (this.playTypeSound) {
                     SoundMan.play('typing');
                 }
@@ -191,10 +147,11 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // OnComplete
-        this.time.addEvent({
-            delay: (this.typeDelay * dialog.text.length),
+        this.textTimerComplete = this.time.addEvent({
+            delay: (this.typeDelay * str.length) / Math.max(1, offset),
             callback: () => {
                 this.textTimer.destroy();
+                dialog.text = str;
                 onEnd();
                 this.isTyping = false;
             },
