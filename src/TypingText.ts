@@ -20,7 +20,7 @@ export class TypingText extends Phaser.GameObjects.Text {
         this.typing = true;
         this.text = '';
         let curChar = 0;
-        offset = offset ?? Math.round(str.length * 0.001);
+        offset = offset ?? Math.max(1, Math.round(str.length * 0.001));
 
         this.typingTimer = this.scene.time.addEvent({
             delay: typeDelay,

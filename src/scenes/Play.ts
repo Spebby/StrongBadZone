@@ -70,7 +70,7 @@ export class PlayScene extends Phaser.Scene {
         room.addVerticesFromObj('room', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
         playermesh.addVerticesFromObj('player', 0.8, 0, 0.2, 0, 0, pMath.DegToRad(-90), 0);
         strongmesh.addVerticesFromObj('strongbad', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
-        shieldmesh.addVerticesFromObj('shield', 0.8, 0, 0.2, 0, 0, pMath.DegToRad(-90), 0);
+        shieldmesh.addVerticesFromObj('shield', 0.8, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
 
         this.edgeRender = this.add.graphics();
         room.setDebug(this.edgeRender);
@@ -89,9 +89,6 @@ export class PlayScene extends Phaser.Scene {
         this.player = new Player(this, hWidth, hHeight * 2 - 100, playermesh, shieldmesh, 200, 2, 1);
         this.strongbad = new Strongbad(this, hWidth, hHeight - 175, strongmesh, 125, 200, 4, 200);
 
-        this.input.on('pointerdown', (pointer : Phaser.Input.Pointer) => {
-            console.log(pointer.x, pointer.y);
-        });
         this.input.on('pointermove', (pointer : Phaser.Input.Pointer) => {
             if (!this.debug || !pointer.isDown) return;
             room.modelRotation.y += pointer.velocity.x / 800;
@@ -195,7 +192,7 @@ export class PlayScene extends Phaser.Scene {
         let onComplete = this.time.addEvent({
             delay: T + (T / 5),
             callback: () => {
-                this.UIScene.setGameOver(true);
+                this.UIScene.setGameOver(win);
                 this.lineColour = 0;
             },
             callbackScope: this,
@@ -204,7 +201,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     togglePause() : void {
-        if (this.gameOver) {
+        if (!this.gameStart || this.gameOver) {
             return;
         }
 

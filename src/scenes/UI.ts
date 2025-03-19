@@ -45,7 +45,7 @@ export class UIScene extends Phaser.Scene {
         this.startText = new TypingText(this, hWidth, 64, '', gConst.uiPopup)
             .setOrigin(0.5)
             .setFontSize('64px');
-        this.startText.startTyping("MOVE TO START", () => {});
+        this.startText.startTyping("MOVE TO START", () => {}, 50);
     }
 
     setGameStart() : void {
@@ -64,9 +64,14 @@ export class UIScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // I'm not sure *why* typing text isn't working properly here, and I am at a point where I don't care.
-        this.gameOverText.startTyping(win ? "YOU WIN" : "GAME OVER", () => {
+        this.gameOverText.startTyping(win ? "YOU WIN" : "STRONGBAD WINS", () => {
             //scoreText.startTyping("Score tbd", () => {}, 20);
-            prompt.startTyping("PRESS R TO RESTART\nPRESS ESCAPE TO RETURN TO MENU", () => {}, 5);
+            this.time.addEvent({
+                delay: 250,
+                callback: () => {
+                    prompt.startTyping("PRESS R TO RESTART\nPRESS ESCAPE TO RETURN TO MENU", () => {}, 25);
+                }
+            })
         }, 100);
     }
 

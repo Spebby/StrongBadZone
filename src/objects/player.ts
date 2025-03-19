@@ -15,11 +15,10 @@ export function mapRange(x : number, a : number, b : number, offset : number) : 
 
 const shieldOffsets : Record<string, pMath.Vector2> = {
     'D': new pMath.Vector2(0, 128),
-    'L': new pMath.Vector2(-128 * 10, -128),
-    'C': new pMath.Vector2(0, -128), 
-    'R': new pMath.Vector2(128 * 10, -128)
+    'L': new pMath.Vector2(-32, 0),
+    'C': new pMath.Vector2(0,   0), 
+    'R': new pMath.Vector2(32,  0)
 };
-// why on god's green earth do these do NOTHING?
 
 let debug = false;
 
@@ -89,6 +88,11 @@ export class Player extends GameObjects.GameObject implements IEntity {
     */
     update(time : number, delta : number) : void {
         debug = (this.scene as PlayScene).isDebugOn();
+        this.mesh.x = this.position.x;
+        this.mesh.y = this.position.y;
+        this.shield.x = this.position.x + this.currShieldOffset.x;
+        this.shield.y = this.position.y + this.currShieldOffset.y;
+
         if ( 0 < this.shieldTime ) {
             if (!KeyMap.isShielding()) {
                 this.unblock();
@@ -110,12 +114,7 @@ export class Player extends GameObjects.GameObject implements IEntity {
 
         const lEdge = this.radius;
         const rEdge = (UIConfig.hWidth * 2) - this.radius;
-        this.position.x = pMath.Clamp(this.position.x, lEdge, rEdge);
-
-        this.mesh.x = this.position.x;
-        this.mesh.y = this.position.y;
-        this.shield.x = this.position.x + this.currShieldOffset.x;
-        this.shield.y = this.position.y + this.currShieldOffset.y;
+        this.position.x = pMath.Clamp(this.position.x, lEdge, rEdge); 
 
         // boing
         if (this.position.x == lEdge || this.position.x == rEdge) {
@@ -143,16 +142,16 @@ export class Player extends GameObjects.GameObject implements IEntity {
         var reflect = new pMath.Vector2(0, -UIConfig.hHeight);
         switch (side) {
             case 'L':
-                reflect.x = reflect.y;
                 this.currShieldOffset = shieldOffsets['L'];
+                reflect.x = reflect.y;
                 break;
             case 'C':
                 this.currShieldOffset = shieldOffsets['C'];
                 reflect.x = 0;
                 break;
             case 'R':
-                reflect.x = -reflect.y;
                 this.currShieldOffset = shieldOffsets['R'];
+                reflect.x = -reflect.y;
                 break;
         }
 

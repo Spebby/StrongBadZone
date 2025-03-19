@@ -29,6 +29,7 @@ export class Preload extends Phaser.Scene {
         SoundMan.add('newLine', 'sfx/typingDing.wav');
 
         SoundMan.add('explosion', 'sfx/explosion.ogg');
+        SoundMan.add('strongHurt', 'sfx/explosion.ogg');
         SoundMan.add('strongTaunt', 'sfx/strongTaunt.mp3');
 
         SoundMan.add('block', 'sfx/reflect.ogg');
