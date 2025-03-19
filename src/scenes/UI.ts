@@ -10,7 +10,6 @@ export class UIScene extends Phaser.Scene {
     private pauseBg     : GameObjects.Rectangle;
 
     private overlay     : GameObjects.Container;
-    private gameOver    : GameObjects.Container;
 
     private gameOverText : TypingText;
     private isGameOver : boolean = false;
@@ -39,16 +38,9 @@ export class UIScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
             .setFontSize('32px');
 
-        let gameOverBg = this.add.rectangle(0, 0, 2 * hWidth, 2 * hHeight, 0xce4c4c, 0.5)
-            .setOrigin(0.5);
-        this.gameOverText = new TypingText(this, 0, 0, 'Game Over!', gConst.uiPopup)
+        this.gameOverText = new TypingText(this, hWidth, hHeight, '', gConst.uiPopup)
             .setOrigin(0.5)
             .setFontSize('96px');
-        let prompt = this.add.text(0, hHeight - UIConfig.borderPadding - 32, 'Press R to Restart', gConst.uiPopup)
-            .setOrigin(0.5);
-        this.gameOver = this.add.container(hWidth, hHeight)
-            .setScale(0);
-        this.gameOver.add([gameOverBg, this.gameOverText, prompt]);
 
         this.startText = new TypingText(this, hWidth, 64, '', gConst.uiPopup)
             .setOrigin(0.5)
@@ -64,19 +56,18 @@ export class UIScene extends Phaser.Scene {
         });
     }
 
-    setGameOver() : void {
-        this.isGameOver = !this.isGameOver;
-        
-        let scoreText = new TypingText(this, 0, this.gameOverText.y + 64, '', gConst.uiPopup)
-            .setOrigin(0.5)
-            .setFontSize('16px');
-        this.gameOver.add(scoreText);
+    setGameOver(win : boolean) : void {
+        this.isGameOver = true;
 
-        this.gameOver.disableInteractive();
-        this.gameOverText.startTyping("GAME OVER", () => {
-            this.gameOver.setInteractive();
-            scoreText.startTyping("Score tbd", () => {});
-        });
+        let prompt = new TypingText(this, UIConfig.hWidth, UIConfig.hHeight + this.gameOverText.height + UIConfig.borderPadding - 32, '', gConst.titleConfig)
+            .setAlign('center')
+            .setOrigin(0.5);
+
+        // I'm not sure *why* typing text isn't working properly here, and I am at a point where I don't care.
+        this.gameOverText.startTyping(win ? "YOU WIN" : "GAME OVER", () => {
+            //scoreText.startTyping("Score tbd", () => {}, 20);
+            prompt.startTyping("PRESS R TO RESTART\nPRESS ESCAPE TO RETURN TO MENU", () => {}, 5);
+        }, 100);
     }
 
     private paused : boolean = false;

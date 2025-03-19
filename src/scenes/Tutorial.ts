@@ -17,22 +17,11 @@ export class TutorialScene extends Phaser.Scene {
     }
     
     create() : void {
+        KeyMap.initialize(this);
         hHeight = UIConfig.hHeight;
         hWidth  = UIConfig.hWidth;
 
         // menu container
-        KeyMap.keySPACE.onDown = () => {
-            // I'm not doing this just yet,
-            // but I'll have to make a decision
-            // on if I want to skip all text anims
-            // or just the current ones. Either
-            // way I'll need to do a list
-            // to keep track of any number of
-            // possible animations
-            // and have the text objects
-            // subscribe themselves to the list.
-        }
-
         KeyMap.keyEXIT.onDown = () => {
             if (!this.doneTyping) {
                 return;
@@ -41,15 +30,43 @@ export class TutorialScene extends Phaser.Scene {
             this.changeScene('MenuScene');
         }
 
+        KeyMap.keySELECT.onDown = () => {
+            if (!this.doneTyping) {
+                return;
+            }
+
+            this.changeScene('PlayScene');
+        }
+
         this.doneTyping = false;
-        var cont = new TypingText(this, 0, 64, '', gConst.settingsConfig).setOrigin(0.5).setScale(0.5);
-        var rett = new TypingText(this, 0, (hWidth * 2) - 64, '', gConst.settingsConfig).setOrigin(0.5).setScale(0.5);
-        
+        var expl = new TypingText(this, hWidth, hHeight, '', gConst.settingsConfig)
+            .setOrigin(0.5);
+        var cont = new TypingText(this, 0, hHeight * 2 - 64, '', gConst.settingsConfig)
+            .setAlign('left')
+            .setOrigin(0.5)
+            .setScale(0.5);
+        cont.x += (128 + UIConfig.borderUISize);
+        var rett = new TypingText(this, (hWidth * 2), hHeight * 2 - 64, '', gConst.settingsConfig)
+            .setAlign('right')
+            .setOrigin(0.5)
+            .setScale(0.5);
+        rett.x -= (128 + UIConfig.borderUISize);
+
         // Using this as a callback for the OnComplete timers of the other printing funcs
         // So that it stats printing "after" the others.
         const printPrompts = () => {
-            cont.startTyping("PRESS ENTER TO CONTINUE", () => {});
-            rett.startTyping("PRESS ESCAPE TO RETURN", () => {});
+            cont.startTyping("HIT ENTER TO CONTINUE", () => {}, 10);
+            rett.startTyping("HIT ESCAPE TO RETURN", () => {},  10);
+            this.doneTyping = true;
+        }
+
+        expl.startTyping(`HOW TO PLAY STRONGBADZONE\n\nMOVE AROUND WITH LEFT AND RIGHT ARROW KEY\nBLOCK ATTACK WITH Q W E KEYS\nDONT DIE\nHIT STRONGBAD 6 TIMES TO WIN`, printPrompts, 10);
+
+        KeyMap.keySPACE.onDown = () => {
+            if (this.doneTyping) {
+                return;
+            }
+            expl.cancel();
         }
     }
 

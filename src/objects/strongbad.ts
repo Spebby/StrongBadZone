@@ -7,6 +7,9 @@ import { UIConfig } from '../config';
 import { SoundMan } from '../soundman';
 import { gConst } from '../global';
 
+import { KeyMap } from '../keymap';
+
+let debug = false;
 let hWidth : number;
 export class Strongbad extends GameObjects.GameObject implements IEntity {
     private baseSpeed   : number;
@@ -34,6 +37,7 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         this.position = new pMath.Vector2(x, y);
         this.velocity = new pMath.Vector2(0, 0);
 
+        debug  = false;
         hWidth = x;
 
         this.baseSpeed   = baseSpeed;
@@ -50,9 +54,17 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         this.debugGraphics = (scene as PlayScene).edgeRender;
         this.velocity.x = this.baseSpeed;
         this.radius = UIConfig.hWidth / 5;
+
+        KeyMap.keySELECT.onDown = () => {
+            if (!debug) {
+                return;
+            }
+            this.damage();
+        }
     }
 
     update(time : number, delta : number) : void {
+        debug = (this.scene as PlayScene).isDebugOn();
         Projectile.updateAll(time, delta);
 
         if (this.paused) return;
@@ -64,7 +76,10 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         this.position.y += this.velocity.y * delta;
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
+        
+        if (debug) {
+            this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
+        }
         if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
             this.velocity.x *= -1;
             this.position.x += this.baseSpeed * (this.position.x < UIConfig.hWidth ? delta : -delta);
@@ -150,6 +165,26 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
     */
     kill() : void {
         Projectile.projectiles.forEach((p) => p.destroy());
+
+        (this.scene as PlayScene).endGame(true);
+        
+        SoundMan.play('explosion');
+        let emitter = this.scene.add.particles(this.position.x, this.position.y, '__WHITE', {
+            scaleX: 1,
+            scaleY: 20,
+            speed: { min: 10, max: 30 },
+
+            lifespan: gConst.deathTime,
+            color:  [gConst.red],
+            alpha:  {start: 1, end:0 },
+            angle:  { min: 45, max: 45},
+            rotate: {min: -180, max: 180},
+
+            gravityY: 0,
+        });
+        emitter.explode(100 * Math.max(0.25, Math.random()));
+
+        this.mesh.destroy();
     }
 
     getPosition() : pMath.Vector2 {
@@ -161,21 +196,14 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         Projectile.projectiles.forEach((p) => p.destroy());
 
         let dist = Math.abs(this.position.x - hWidth);
-        let t = (dist / this.velocity.x) * 1000;
-        let proxy = {
-            x: this.position.x,
-            y: this.position.y,
-            meshX: this.mesh.x,
-            meshY: this.mesh.y
-        }
-        this.scene.tweens.create({
-            delay: gConst.playerDeathTime,
-            targets: proxy,
+        let t = Math.abs((dist / this.velocity.x) * 1000) * 0.5;
+        this.scene.tweens.add({
+            delay: gConst.deathTime,
+            targets: this.mesh,
             ease: 'linear',
             duration: t,
             
             x: hWidth,
-            meshX: hWidth,
             
             onComplete: () => {
                 SoundMan.play('strongTaunt');
@@ -183,7 +211,7 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         });
 
         return this.scene.time.addEvent({
-            delay: 5000 + t + gConst.playerDeathTime
+            delay: 3500 + t + gConst.deathTime
         });
     }
 }
@@ -237,7 +265,7 @@ export class Projectile extends GameObjects.Container {
         this.scene.add.existing(this);
 
         this.scene.input.on('pointermove', (pointer : Phaser.Input.Pointer) => {
-            if (!pointer.isDown) return;
+            if (!debug || !pointer.isDown) return;
             this.mesh.modelRotation.y += pointer.velocity.x / 800;
             this.mesh.modelRotation.x += pointer.velocity.y / 800;
         });
@@ -285,6 +313,7 @@ export class Projectile extends GameObjects.Container {
             const blocking : boolean = player.isBlocking();
             if (!blocking) {
                 this.destroy();
+                player.damage();
                 return;
             }
             // maybe force player to unblock?

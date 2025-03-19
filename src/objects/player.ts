@@ -14,11 +14,14 @@ export function mapRange(x : number, a : number, b : number, offset : number) : 
 }
 
 const shieldOffsets : Record<string, pMath.Vector2> = {
-    'D': new pMath.Vector2(0, 64),
-    'L': new pMath.Vector2(-128, -64),
-    'C': new pMath.Vector2(0, -64), 
-    'R': new pMath.Vector2(128, -64)
+    'D': new pMath.Vector2(0, 128),
+    'L': new pMath.Vector2(-128 * 10, -128),
+    'C': new pMath.Vector2(0, -128), 
+    'R': new pMath.Vector2(128 * 10, -128)
 };
+// why on god's green earth do these do NOTHING?
+
+let debug = false;
 
 export class Player extends GameObjects.GameObject implements IEntity {
     private baseSpeed  : number;
@@ -42,6 +45,7 @@ export class Player extends GameObjects.GameObject implements IEntity {
 
     constructor(scene : PlayScene, x : number, y : number, mesh : GameObjects.Mesh, shieldmesh : GameObjects.Mesh, baseSpeed : number, blockDuration : number, blockDelay : number) {
         super(scene, 'playerGameObject');
+        debug = false;
 
         this.baseSpeed = baseSpeed;
         this.blockTime = blockDuration;
@@ -84,7 +88,7 @@ export class Player extends GameObjects.GameObject implements IEntity {
     * @ref https://docs.phaser.io/api-documentation/event/scenes-events#update
     */
     update(time : number, delta : number) : void {
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
+        debug = (this.scene as PlayScene).isDebugOn();
         if ( 0 < this.shieldTime ) {
             if (!KeyMap.isShielding()) {
                 this.unblock();
@@ -118,10 +122,13 @@ export class Player extends GameObjects.GameObject implements IEntity {
             this.velocity.x *= -1;
         }
 
-        this.debugGraphics.strokePoints([
-            {x: this.position.x, y: this.position.y}, 
-            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}
-        ], false);
+        if (debug) {
+            this.debugGraphics.strokePoints([
+                {x: this.position.x, y: this.position.y}, 
+                {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}
+            ], false);
+            this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
+        }
     }
 
     // TODO: revise the clamping logic for the sideways angles
@@ -167,26 +174,26 @@ export class Player extends GameObjects.GameObject implements IEntity {
     * @abstract Kills the player.
     */
     damage() : void {
-        (this.scene as PlayScene).endGame();
+        (this.scene as PlayScene).endGame(false);
         
         SoundMan.play('explosion');
         let emitter = this.scene.add.particles(this.position.x, this.position.y, '__WHITE', {
-            scaleX: 0.02,
-            scaleY: 2,
+            scaleX: 1,
+            scaleY: 20,
             speed: { min: 10, max: 30 },
 
-            lifespan: gConst.playerDeathTime,
+            lifespan: gConst.deathTime,
             color:  [gConst.red],
             alpha:  {start: 1, end:0 },
             angle:  { min: 45, max: 45},
             rotate: {min: -90, max: 90},
 
             gravityY: 0,
-            blendMode: 'ADD',
         });
         emitter.explode(50 * Math.max(0.25, Math.random()));
 
         this.mesh.destroy();
+        this.shield.destroy();
         return;
     }
 

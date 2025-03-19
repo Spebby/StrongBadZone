@@ -13,12 +13,12 @@ export class PlayScene extends Phaser.Scene {
     private overlay : Phaser.GameObjects.Container;
     private debug   : boolean;
 
-    private paused : boolean = false;
-    private gameOver : boolean = false;
-    private gameStart : boolean = false;
+    private paused : boolean;
+    private gameOver : boolean;
+    private gameStart : boolean;
     private UIScene : UIScene;
 
-    lineColour : number = gConst.red;
+    lineColour : number;
     
     edgeRender : Phaser.GameObjects.Graphics;
     strongbad  : Strongbad;
@@ -33,6 +33,11 @@ export class PlayScene extends Phaser.Scene {
         this.scene.launch('UIScene');
         this.scene.bringToTop('UIScene');
         this.UIScene = this.scene.manager.getScene('UIScene') as UIScene;
+
+        this.paused = false;
+        this.gameOver = false;
+        this.gameStart = false;
+        this.lineColour = gConst.red;
 
         // setup UI.
         let hHeight = parseInt(GameConfig.scale.height as string) / 2;
@@ -105,7 +110,17 @@ export class PlayScene extends Phaser.Scene {
         }
 
         KeyMap.keyEXIT.onDown = () => {
+            if (this.gameOver) {
+                this.changeScene('MenuScene');
+                return;
+            }
             this.togglePause();
+        }
+
+        KeyMap.keyRESET.onDown = () => {
+            if (this.gameOver) {
+                this.reset();
+            }
         }
     }
 
@@ -120,10 +135,22 @@ export class PlayScene extends Phaser.Scene {
         this.player.update(time, delta);
     }
 
-    endGame() : void {
+    endGame(win : boolean) : void {
+        this.gameOver = true;
         this.paused = true;
 
-        var timer : Phaser.Time.TimerEvent = this.strongbad.playTaunt();
+        var T;
+        var timer : Phaser.Time.TimerEvent;
+        // this is an absurdly gross way of doing this but im so tired
+        if (win) {
+            timer = this.time.addEvent({
+               delay: gConst.deathTime + 1000,
+            });
+            T = 5000;
+        } else {
+            timer = this.strongbad.playTaunt();
+            T = 3000;
+        }
         timer.callback = () => {
             this.time.addEvent({
                 delay: 500,
@@ -137,20 +164,29 @@ export class PlayScene extends Phaser.Scene {
             });
         };
 
-        const T = 5000; // in ms
         const d = 10;
         const t = T / d;
         let step = 0;
+
+        const sR = this.lineColour >> 16 & 0xFF;
+        const sG = this.lineColour >> 8  & 0xFF;
+        const sB = this.lineColour & 0xFF;
         // Darkens the line colour to black over T ms
         let fadeOutLines = this.time.addEvent({
             delay:  d,
             repeat: t,
             callback: () => {
-                const factor = 1 - (++step / t);
-                const R = Math.floor(factor * ((this.lineColour >> 16) & 0xFF));
-                const G = Math.floor(factor * ((this.lineColour >>  8) & 0xFF));
-                const B = Math.floor(factor * (this.lineColour & 0xFF));
+                const factor = Math.max(0, 1 - (++step / t));
+                const R = Math.floor(factor * sR);
+                const G = Math.floor(factor * sG);
+                const B = Math.floor(factor * sB);
                 this.lineColour = (R << 16) | (G << 8) | B;
+                // we do this mask b/c JS sometimes interprets 0x000000 as -1 due
+                // to 32-bit signed float weirdness.
+                
+                if (win) {
+                    this.player.shield.setAlpha(factor);
+                }
             },
             callbackScope: this,
             paused: true
@@ -159,22 +195,12 @@ export class PlayScene extends Phaser.Scene {
         let onComplete = this.time.addEvent({
             delay: T + (T / 5),
             callback: () => {
-                this.UIScene.setGameOver();
-                this.gameOver = true;
+                this.UIScene.setGameOver(true);
+                this.lineColour = 0;
             },
             callbackScope: this,
             paused: true
         });
-    }
-
-    reset() : void {
-        this.gameOver = false;
-        this.paused   = false;
-        
-        // if i do scoring put it here
-        
-        this.scene.stop('UIScene');
-        this.scene.start('PlayScene');
     }
 
     togglePause() : void {
@@ -200,5 +226,25 @@ export class PlayScene extends Phaser.Scene {
         this.gameStart = true;
         this.paused    = false;
         this.UIScene.setGameStart();
+    }
+
+    changeScene(key : string) : void {
+        SoundMan.play('select');
+        this.scene.stop('UIScene');
+        this.scene.start(key);
+    }
+
+    reset() : void {
+        this.gameOver = false;
+        this.paused   = false;
+        
+        // if i do scoring put it here
+        
+        this.scene.stop('UIScene');
+        this.scene.start('PlayScene');
+    }
+
+    isDebugOn() : boolean {
+        return this.debug;
     }
 }

@@ -87,7 +87,7 @@ export let gConst = {
     },
     menuText : `${logo}\r\r\r\r\r`,
     red : 0x70161E,
-    playerDeathTime : 3000
+    deathTime : 3250
 } as const;
 
 /**
