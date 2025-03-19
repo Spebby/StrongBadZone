@@ -5,8 +5,7 @@ import { SoundMan } from '../soundman';
 import { KeyMap } from '../keymap';
 import { PlayScene } from '../scenes/Play'
 import { UIConfig } from '../config';
-
-const { asin, PI } = Math;
+import { gConst } from '../global';
 
 export function mapRange(x : number, a : number, b : number, offset : number) : number {
     const start = a + offset;
@@ -15,8 +14,7 @@ export function mapRange(x : number, a : number, b : number, offset : number) : 
 }
 
 export class Player extends GameObjects.GameObject implements IEntity {
-    private baseSpeed : number;
-    private drag : number = 0.75;
+    private baseSpeed  : number;
     private blockTime  : number;
     private blockDelay : number;
 
@@ -69,8 +67,8 @@ export class Player extends GameObjects.GameObject implements IEntity {
     * @ref https://docs.phaser.io/api-documentation/event/scenes-events#update
     */
     update(time : number, delta : number) : void {
+        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         if ( 0 < this.shieldTime ) {
-            this.velocity.set(0, 0);
             if (!KeyMap.isShielding()) {
                 this.unblock();
                 return;
@@ -81,22 +79,23 @@ export class Player extends GameObjects.GameObject implements IEntity {
             if (this.shieldTime < 0) {
                 this.unblock();
             }
+
+            return;
         } 
 
         this.shieldDelay -= delta;
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
-        //this.velocity.scale(this.drag);
 
         this.position.x = pMath.Clamp(this.position.x, this.radius, (UIConfig.hWidth * 2) - this.radius);
 
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
 
-        this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         this.debugGraphics.strokePoints([
             {x: this.position.x, y: this.position.y}, 
-            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}], false);
+            {x: this.position.x + this.reflectDir.x * 150, y: this.position.y - this.reflectDir.y * -150}
+        ], false);
     }
 
     // TODO: revise the clamping logic for the sideways angles
@@ -128,9 +127,9 @@ export class Player extends GameObjects.GameObject implements IEntity {
     }
 
     unblock() : void {
-        this.shieldDelay = (0.9 * ((this.blockTime - this.shieldTime)/this.blockTime) + 0.1) * this.blockDelay;
+        this.shieldDelay = (0.9 * ((this.blockTime - this.shieldTime) / this.blockTime) + 0.1) * this.blockDelay;
         this.shieldTime = 0;
-        // applys a proportional shield delay based on shield used; can't be cutoff b/c spam blocking would become meta.
+        // applys a proportional shield delay based on shield used; has min b/c without, spam would be meta
         this.reflectDir.set(0, 0);
     }
 
@@ -140,6 +139,24 @@ export class Player extends GameObjects.GameObject implements IEntity {
     damage() : void {
         (this.scene as PlayScene).endGame();
         
+        SoundMan.playUnweight('explosions');
+        let emitter = this.scene.add.particles(this.position.x, this.position.y, '__WHITE', {
+            scaleX: 0.02,
+            scaleY: 2,
+            speed: { min: 10, max: 30 },
+
+            lifespan: gConst.playerDeathTime,
+            color:  [gConst.red],
+            alpha:  {start: 1, end:0 },
+            angle:  { min: 45, max: 45},
+            rotate: {min: -90, max: 90},
+
+            gravityY: 0,
+            blendMode: 'ADD',
+        });
+        emitter.explode(50 * Math.max(0.25, Math.random()));
+
+        this.mesh.destroy();
         return;
     }
 

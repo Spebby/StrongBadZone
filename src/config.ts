@@ -2,6 +2,7 @@ import { Preload } from './scenes/Preload';
 import { MenuScene } from './scenes/Menu';
 import { PlayScene } from './scenes/Play';
 import { UIScene }   from './scenes/UI';
+import { TutorialScene } from './scenes/Tutorial';
 
 export const GameConfig : Phaser.Types.Core.GameConfig = {
     title: 'StrongBadZone',
@@ -23,7 +24,7 @@ export const GameConfig : Phaser.Types.Core.GameConfig = {
             debug: true
         }
     },
-    scene: [Preload, MenuScene, PlayScene, UIScene],
+    scene: [Preload, MenuScene, TutorialScene, PlayScene, UIScene],
     input: {
         keyboard: true
     },

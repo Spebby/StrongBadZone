@@ -3,23 +3,17 @@ import { KeyMap } from "../keymap";
 import { gVar, gConst, saveCookie } from "../global";
 import { SoundMan } from "../soundman";
 import { GameObjects, Math as pMath } from 'phaser';
+import { TypingText } from '../TypingText';
 
 var hWidth;
 var hHeight;
 
+const typeDelay = 2;
 export class MenuScene extends Phaser.Scene {
     private hsText  : Phaser.GameObjects.Text;
-    private text    : Phaser.GameObjects.Text;
     private menu    : Phaser.GameObjects.Container;
-    private overlay : Phaser.GameObjects.Container;
     private creditsOverlay : Phaser.GameObjects.Container;
    
-    private textTimer : Phaser.Time.TimerEvent;
-    private textTimerComplete : Phaser.Time.TimerEvent;
-    private typeDelay : number  = 2; // in ms
-    private isTyping  : boolean = false;
-    private playTypeSound : boolean = true;
-
     constructor() {
         super({ key: 'MenuScene' });
     }
@@ -27,11 +21,12 @@ export class MenuScene extends Phaser.Scene {
     create() : void {
         KeyMap.initialize(this);
         // setup UI.
-
         hHeight = UIConfig.hHeight;
         hWidth  = UIConfig.hWidth;
 
-        this.text = this.add.text(UIConfig.borderPadding, UIConfig.borderPadding, '', gConst.uiConfig);
+        var text = new TypingText(this, UIConfig.borderPadding, UIConfig.borderPadding, '', gConst.uiConfig);
+        text.startTyping(gConst.menuText, this.triggerMenu.bind(this));
+
         var menu  = this.add.container(UIConfig.hWidth, UIConfig.hHeight - (UIConfig.hHeight / 16));
 
         // menu container
@@ -63,7 +58,7 @@ export class MenuScene extends Phaser.Scene {
             this.changeScene('PlayScene')
         }, list);
         createTextButton(0, 128, "HOW TO PLAY", gConst.settingsConfig, () => {
-
+            this.changeScene('TutorialScene');
         }, list);
         createTextButton(0, 256, "CREDITS", gConst.settingsConfig, () => {
             this.creditsOverlay.setVisible(!this.creditsOverlay.visible);
@@ -74,18 +69,14 @@ export class MenuScene extends Phaser.Scene {
         this.menu.setVisible(false);
 
         KeyMap.keyEXIT.onDown = () => {
-            if (this.isTyping) {
-                this.textTimer.paused = true;
-                this.playTypeSound = false;
-                this.textTimerComplete.remove(true);
-                this.playTypeSound = true;
-            }
-
             if (this.creditsOverlay.visible) {
                 this.creditsOverlay.setVisible(false);
             }
         }
 
+        KeyMap.keySPACE.onDown = () => {
+            text.cancel();
+        }
 
         // Credits Overlay
         this.creditsOverlay = this.add.container(hWidth, hHeight);
@@ -97,14 +88,6 @@ export class MenuScene extends Phaser.Scene {
 
         this.creditsOverlay.add([rect, credits, creditsPrompt]);
         this.creditsOverlay.setVisible(false);
-
-        // Start Typing
-        this.printText(gConst.menuText, this.text, this.triggerMenu.bind(this));
-    }
-
-
-    update(time : number, delta : number) : void {
-        delta /= 1000;
     }
 
     changeScene(key : string) : void {
@@ -125,37 +108,5 @@ export class MenuScene extends Phaser.Scene {
 
     toggleOverlay() : void {
         return;
-    }
-
-
-    printText(str : string, dialog : GameObjects.Text, onEnd : () => void) : void {
-        this.isTyping = true;
-        dialog.text = '';
-        let currentChar = 0;
-        let offset = Math.round(str.length * 0.001);
-        this.textTimer = this.time.addEvent({
-            delay: this.typeDelay,
-            repeat: (str.length - 1) / Math.max(1, offset),
-            callback: () => { 
-                dialog.text += str.substring(currentChar, currentChar + offset);
-                currentChar += offset;
-                if (this.playTypeSound) {
-                    SoundMan.play('typing');
-                }
-            },
-            callbackScope: this
-        });
-
-        // OnComplete
-        this.textTimerComplete = this.time.addEvent({
-            delay: (this.typeDelay * str.length) / Math.max(1, offset),
-            callback: () => {
-                this.textTimer.destroy();
-                dialog.text = str;
-                onEnd();
-                this.isTyping = false;
-            },
-            callbackScope: this
-        });
     }
 }

@@ -5,14 +5,15 @@ import { Player } from './player';
 import { PlayScene } from '../scenes/Play';
 import { UIConfig } from '../config';
 import { SoundMan } from '../soundman';
+import { gConst } from '../global';
 
+let hWidth : number;
 export class Strongbad extends GameObjects.GameObject implements IEntity {
     private baseSpeed   : number;
     private travelDist  : number;
     private bulletSpeed : number;
     private fireDelay   : number;
     private fireTimer   : number;
-    private onHitEvent  : () => void;
 
     private position : pMath.Vector2;
     private velocity : pMath.Vector2;
@@ -25,18 +26,19 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
     debugGraphics : GameObjects.Graphics;
     private playerRef : Player;
 
-    constructor(scene : Phaser.Scene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, travelDist : number, fireDelay : number, bulletSpeed : number, onHitEvent : () => void) {
+    constructor(scene : Phaser.Scene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, travelDist : number, fireDelay : number, bulletSpeed : number) {
         super(scene, 'strongbadGameObject');
         this.mesh = mesh;
         this.position = new pMath.Vector2(x, y);
         this.velocity = new pMath.Vector2(0, 0);
+
+        hWidth = x;
 
         this.baseSpeed   = baseSpeed;
         this.travelDist  = travelDist;
         this.bulletSpeed = bulletSpeed;
         this.fireDelay   = fireDelay * 1.33;
         this.fireTimer   = fireDelay * 0.25;
-        this.onHitEvent  = onHitEvent;
 
         Projectile.strongbad = this;
 
@@ -58,8 +60,6 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         //console.log(this);
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
-        this.mesh.x = this.position.x;
-        this.mesh.y = this.position.y;
         this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
             this.velocity.x *= -1;
@@ -151,7 +151,43 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
     getPosition() : pMath.Vector2 {
         return this.position.clone();
     }
+
+    playTaunt() : Phaser.Time.TimerEvent {
+        this.paused = true;
+        Projectile.projectiles.forEach((p) => p.destroy());
+
+        let dist = Math.abs(this.position.x - hWidth);
+        let t = (dist / this.velocity.x) * 1000;
+        let proxy = {
+            x: this.position.x,
+            y: this.position.y,
+            meshX: this.mesh.x,
+            meshY: this.mesh.y
+        }
+        this.scene.tweens.create({
+            delay: gConst.playerDeathTime,
+            targets: proxy,
+            ease: 'linear',
+            duration: t,
+            
+            x: hWidth,
+            meshX: hWidth,
+            
+            onComplete: () => {
+                SoundMan.play('strongTaunt');
+            }
+        });
+
+        return this.scene.time.addEvent({
+            delay: 5000 + t + gConst.playerDeathTime
+        });
+    }
 }
+
+
+/*
+ * =============================================
+ */
 
 
 function calculateSize(t : number, low : number, high : number, start : number, end : number) : number {

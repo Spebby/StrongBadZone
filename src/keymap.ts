@@ -10,6 +10,7 @@ export class KeyMap {
     static keySELECT: Keyboard.Key;
     static keyRESET:  Keyboard.Key;
     static keyEXIT:   Keyboard.Key;
+    static keySPACE:  Keyboard.Key;
 
     // sbz specific
     static keyShieldL : Keyboard.Key;
@@ -31,6 +32,7 @@ export class KeyMap {
         KeyMap.keySELECT = scene.input.keyboard.addKey(Keyboard.KeyCodes.ENTER);
         KeyMap.keyRESET  = scene.input.keyboard.addKey(Keyboard.KeyCodes.R);
         KeyMap.keyEXIT   = scene.input.keyboard.addKey(Keyboard.KeyCodes.ESC);
+        KeyMap.keySPACE  = scene.input.keyboard.addKey(Keyboard.KeyCodes.SPACE);
 
         KeyMap.keyShieldL = scene.input.keyboard.addKey(Keyboard.KeyCodes.Q);
         KeyMap.keyShieldC = scene.input.keyboard.addKey(Keyboard.KeyCodes.W);

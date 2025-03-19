@@ -86,6 +86,8 @@ export let gConst = {
         fixedWidth: 0
     },
     menuText : `${logo}\r\r\r\r\r`,
+    red : 0x70161E,
+    playerDeathTime : 3000
 } as const;
 
 /**
