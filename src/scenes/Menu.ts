@@ -12,8 +12,8 @@ const typeDelay = 2;
 export class MenuScene extends Phaser.Scene {
     private hsText  : Phaser.GameObjects.Text;
     private menu    : Phaser.GameObjects.Container;
-    private creditsOverlay : Phaser.GameObjects.Container;
-   
+    private doneTyping : boolean;
+
     constructor() {
         super({ key: 'MenuScene' });
     }
@@ -27,8 +27,10 @@ export class MenuScene extends Phaser.Scene {
         var text = new TypingText(this, UIConfig.borderPadding, UIConfig.borderPadding, '', gConst.uiConfig);
         text.startTyping(gConst.menuText, () => {
             this.triggerMenu();
+            this.doneTyping = true;
         });
 
+        this.doneTyping = false;
         var menu  = this.add.container(UIConfig.hWidth, UIConfig.hHeight - (UIConfig.hHeight / 16));
 
         // menu container
@@ -63,33 +65,19 @@ export class MenuScene extends Phaser.Scene {
             this.changeScene('TutorialScene');
         }, list);
         createTextButton(0, 256, "CREDITS", gConst.settingsConfig, () => {
-            this.creditsOverlay.setVisible(!this.creditsOverlay.visible);
+            this.changeScene('CreditScene');
         }, list);
 
         menu.add(list);
         this.menu = menu;
         this.menu.setVisible(false);
 
-        KeyMap.keyEXIT.onDown = () => {
-            if (this.creditsOverlay.visible) {
-                this.creditsOverlay.setVisible(false);
-            }
-        }
-
         KeyMap.keySPACE.onDown = () => {
+            if (this.doneTyping) {
+                return;
+            }
             text.cancel();
         }
-
-        // Credits Overlay
-        this.creditsOverlay = this.add.container(hWidth, hHeight);
-        var rect = this.add.rectangle(0, 0, hWidth * 2, hHeight * 2, 0, 1).setOrigin(0.5);
-
-        // If I have time, make the game type this.
-        var credits = this.add.text(0, 0, "Programming & Art by Thom 'Spebby' Mott\n\nOriginal Source Homestar Runner\nPhaser 3 TypeScript template by digitsensitive", gConst.settingsConfig).setOrigin(0.5);
-        var creditsPrompt = this.add.text(0, credits.displayHeight - 64, "PRESS ESCAPE TO RETURN", gConst.settingsConfig).setOrigin(0.5).setScale(0.5);
-
-        this.creditsOverlay.add([rect, credits, creditsPrompt]);
-        this.creditsOverlay.setVisible(false);
     }
 
     changeScene(key : string) : void {

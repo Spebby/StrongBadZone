@@ -7,11 +7,11 @@ import { TypingText } from '../TypingText';
 var hWidth;
 var hHeight;
 
-export class TutorialScene extends Phaser.Scene {
+export class CreditScene extends Phaser.Scene {
     private doneTyping : boolean;
 
     constructor() {
-        super({ key: 'TutorialScene' });
+        super({ key: 'CreditScene' });
     }
     
     create() : void {
@@ -28,37 +28,21 @@ export class TutorialScene extends Phaser.Scene {
             this.changeScene('MenuScene');
         }
 
-        KeyMap.keySELECT.onDown = () => {
-            if (!this.doneTyping) {
-                return;
-            }
-
-            this.changeScene('PlayScene');
-        }
-
         this.doneTyping = false;
         var expl = new TypingText(this, hWidth, hHeight, '', gConst.settingsConfig)
             .setOrigin(0.5);
-        var cont = new TypingText(this, 0, hHeight * 2 - 64, '', gConst.settingsConfig)
-            .setAlign('left')
+        var rett = new TypingText(this, hWidth, hHeight + expl.displayHeight + 64, '', gConst.settingsConfig)
             .setOrigin(0.5)
             .setScale(0.5);
-        cont.x += (128 + UIConfig.borderUISize);
-        var rett = new TypingText(this, (hWidth * 2), hHeight * 2 - 64, '', gConst.settingsConfig)
-            .setAlign('right')
-            .setOrigin(0.5)
-            .setScale(0.5);
-        rett.x -= (128 + UIConfig.borderUISize);
 
         // Using this as a callback for the OnComplete timers of the other printing funcs
         // So that it stats printing "after" the others.
         const printPrompts = () => {
-            cont.startTyping("HIT ENTER TO CONTINUE", () => {}, 10);
             rett.startTyping("HIT ESCAPE TO RETURN", () => {},  10);
             this.doneTyping = true;
         }
 
-        expl.startTyping(`HOW TO PLAY STRONGBADZONE\n\nMOVE AROUND WITH LEFT AND RIGHT ARROW KEY\nBLOCK ATTACK WITH Q W E KEYS\nDONT DIE\nHIT STRONGBAD 6 TIMES TO WIN`, printPrompts, 10);
+        expl.startTyping(`PROGRAMMING & ART BY THOM 'SPEBBY' MOTT\n\nORIGINAL SOURCE - HOMESTAR RUNNER\nPHASER 3 TYPESCRIPT TEMPLATE BY DIGITALSENSITIVE`, printPrompts, 10);
 
         KeyMap.keySPACE.onDown = () => {
             if (this.doneTyping) {
