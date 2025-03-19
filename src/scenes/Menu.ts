@@ -25,7 +25,9 @@ export class MenuScene extends Phaser.Scene {
         hWidth  = UIConfig.hWidth;
 
         var text = new TypingText(this, UIConfig.borderPadding, UIConfig.borderPadding, '', gConst.uiConfig);
-        text.startTyping(gConst.menuText, this.triggerMenu.bind(this));
+        text.startTyping(gConst.menuText, () => {
+            this.triggerMenu();
+        });
 
         var menu  = this.add.container(UIConfig.hWidth, UIConfig.hHeight - (UIConfig.hHeight / 16));
 
@@ -100,7 +102,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     resetHighscore() : void {
-        SoundMan.playUnweight('explosions');
+        SoundMan.play('explosion');
         document.cookie = `highScore=0; expires=Fri, 1, Jan 1, 23:59:59 GMT; path=/`;
         gVar.highScore  = 0;
         this.hsText.text = ``;

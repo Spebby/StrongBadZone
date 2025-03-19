@@ -14,7 +14,9 @@ export class TypingText extends Phaser.GameObjects.Text {
         scene.add.existing(this);
     }
 
-    startTyping(str : string, onEnd : () => void, typeDelay : number = 2, offset? : number, typeSFX : string = 'typing') : void {
+    startTyping(str : string, onEnd : () => void, typeDelay : number = 2, offset? : number, typeSFX? : string) : void {
+        typeSFX ??= "typing";
+
         this.typing = true;
         this.text = '';
         let curChar = 0;
@@ -24,7 +26,8 @@ export class TypingText extends Phaser.GameObjects.Text {
             delay: typeDelay,
             repeat: (str.length - 1) / Math.max(1, offset),
             callback: () => {
-                this.text += str.substring(curChar, curChar + offset);
+                var sub = str.substring(curChar, curChar + offset);
+                this.text += sub;
                 curChar += offset;
                 if (this.playTypeSound) {
                     SoundMan.play(typeSFX);

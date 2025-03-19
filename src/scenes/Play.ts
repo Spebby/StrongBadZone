@@ -15,6 +15,7 @@ export class PlayScene extends Phaser.Scene {
 
     private paused : boolean = false;
     private gameOver : boolean = false;
+    private gameStart : boolean = false;
     private UIScene : UIScene;
 
     lineColour : number = gConst.red;
@@ -37,6 +38,19 @@ export class PlayScene extends Phaser.Scene {
         let hHeight = parseInt(GameConfig.scale.height as string) / 2;
         let hWidth  = parseInt(GameConfig.scale.width  as string) / 2;
         this.debug = false;
+        this.paused = true;
+
+        let g = this.add.graphics({
+            x: 0,
+            y: 0
+        });
+        g.fillStyle(gConst.red, 1);
+        g.fillRect(0, 0, 1, 1);
+        g.generateTexture('red', 1, 1);
+        g.fillStyle(0, 1);
+        g.fillRect(0, 0, 1, 1);
+        g.generateTexture('black', 1, 1);
+        g.destroy();
 
         // Making meshes here b/c for whatever reason they don't behave if I make them in their respective classes
         // NOTE: from future me, this is because the meshes become
@@ -44,15 +58,16 @@ export class PlayScene extends Phaser.Scene {
         // the display list. Which causes nothing to be rendered b/c
         // the gameobject class has no defined rendering routine.
         const room       = this.add.mesh(hWidth, hHeight, 'blank');
-        const playermesh = this.add.mesh(hWidth, hHeight, 'blank');
+        const playermesh = this.add.mesh(hWidth, hHeight, 'black');
         const strongmesh = this.add.mesh(hWidth, hHeight, 'blank');
+        const shieldmesh = this.add.mesh(hWidth, hHeight, 'red');
 
         room.addVerticesFromObj('room', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
         playermesh.addVerticesFromObj('player', 0.8, 0, 0.2, 0, 0, pMath.DegToRad(-90), 0);
         strongmesh.addVerticesFromObj('strongbad', 1, 0, 0, 0, 0, pMath.DegToRad(-90), 0);
+        shieldmesh.addVerticesFromObj('shield', 0.8, 0, 0.2, 0, 0, pMath.DegToRad(-90), 0);
 
         this.edgeRender = this.add.graphics();
-        this.edgeRender.blendMode = 'ADD';
         room.setDebug(this.edgeRender);
         playermesh.setDebug(this.edgeRender);
         strongmesh.setDebug(this.edgeRender);
@@ -63,9 +78,12 @@ export class PlayScene extends Phaser.Scene {
         strongmesh.z -= 10;
         strongmesh.setOrtho(6.2, 4.6);
         playermesh.setOrtho(6.2, 4.6);
+        shieldmesh.setOrtho(6.2, 4.6);
+        shieldmesh.setDepth(-1);
 
-        this.player = new Player(this, hWidth, hHeight * 2 - 100, playermesh, 200, 2, 1);
+        this.player = new Player(this, hWidth, hHeight * 2 - 100, playermesh, shieldmesh, 200, 2, 1);
         this.strongbad = new Strongbad(this, hWidth, hHeight - 175, strongmesh, 125, 200, 4, 200);
+
         this.input.on('pointerdown', (pointer : Phaser.Input.Pointer) => {
             console.log(pointer.x, pointer.y);
         });
@@ -94,6 +112,7 @@ export class PlayScene extends Phaser.Scene {
     update(time : number, delta : number) : void {
         this.edgeRender.clear();
         this.edgeRender.lineStyle(2, this.lineColour);
+
         if (this.paused) return;
 
         delta /= 1000;
@@ -167,5 +186,19 @@ export class PlayScene extends Phaser.Scene {
 
         this.UIScene.togglePause();
         this.paused = !this.paused;
+    }
+
+    isPaused() : boolean {
+        return this.paused;
+    }
+
+    startGame() : void {
+        if (this.gameStart) {
+            return;
+        }
+
+        this.gameStart = true;
+        this.paused    = false;
+        this.UIScene.setGameStart();
     }
 }

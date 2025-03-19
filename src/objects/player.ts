@@ -13,6 +13,13 @@ export function mapRange(x : number, a : number, b : number, offset : number) : 
     return start + ((x - a) * (end - start) / (b - a));
 }
 
+const shieldOffsets : Record<string, pMath.Vector2> = {
+    'D': new pMath.Vector2(0, 64),
+    'L': new pMath.Vector2(-128, -64),
+    'C': new pMath.Vector2(0, -64), 
+    'R': new pMath.Vector2(128, -64)
+};
+
 export class Player extends GameObjects.GameObject implements IEntity {
     private baseSpeed  : number;
     private blockTime  : number;
@@ -25,18 +32,22 @@ export class Player extends GameObjects.GameObject implements IEntity {
     private velocity : pMath.Vector2;
     private reflectDir : pMath.Vector2;
 
+    private currShieldOffset : pMath.Vector2;
+
     radius : number = UIConfig.hWidth / 5;
     health : number = 1;
     mesh : GameObjects.Mesh;
+    shield : GameObjects.Mesh;
     debugGraphics : GameObjects.Graphics;
 
-    constructor(scene : PlayScene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, blockDuration : number, blockDelay : number) {
+    constructor(scene : PlayScene, x : number, y : number, mesh : GameObjects.Mesh, shieldmesh : GameObjects.Mesh, baseSpeed : number, blockDuration : number, blockDelay : number) {
         super(scene, 'playerGameObject');
 
         this.baseSpeed = baseSpeed;
         this.blockTime = blockDuration;
         this.blockDelay = blockDelay;
-        this.mesh = mesh;
+        this.mesh   = mesh;
+        this.shield = shieldmesh;
 
         this.position = new pMath.Vector2(x, y);
         this.velocity = new pMath.Vector2(0, 0);
@@ -46,9 +57,11 @@ export class Player extends GameObjects.GameObject implements IEntity {
 
         KeyMap.keyLEFT.onDown = () => {
             this.velocity.x = -this.baseSpeed;
+            (scene as PlayScene).startGame();
         }
         KeyMap.keyRIGHT.onDown = () => {
             this.velocity.x = this.baseSpeed;
+            (scene as PlayScene).startGame();
         }
 
         Object.entries(KeyMap.keyShield).forEach(([side, key]) => {
@@ -57,7 +70,11 @@ export class Player extends GameObjects.GameObject implements IEntity {
             });
         });
         
-
+        this.currShieldOffset = shieldOffsets['D'];
+        this.mesh.x = x;
+        this.mesh.y = y;
+        this.shield.x = x + this.currShieldOffset.x;
+        this.shield.y = y + this.currShieldOffset.y;
         scene.add.existing(this);
     }
 
@@ -87,10 +104,19 @@ export class Player extends GameObjects.GameObject implements IEntity {
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
 
-        this.position.x = pMath.Clamp(this.position.x, this.radius, (UIConfig.hWidth * 2) - this.radius);
+        const lEdge = this.radius;
+        const rEdge = (UIConfig.hWidth * 2) - this.radius;
+        this.position.x = pMath.Clamp(this.position.x, lEdge, rEdge);
 
         this.mesh.x = this.position.x;
         this.mesh.y = this.position.y;
+        this.shield.x = this.position.x + this.currShieldOffset.x;
+        this.shield.y = this.position.y + this.currShieldOffset.y;
+
+        // boing
+        if (this.position.x == lEdge || this.position.x == rEdge) {
+            this.velocity.x *= -1;
+        }
 
         this.debugGraphics.strokePoints([
             {x: this.position.x, y: this.position.y}, 
@@ -111,12 +137,15 @@ export class Player extends GameObjects.GameObject implements IEntity {
         switch (side) {
             case 'L':
                 reflect.x = reflect.y;
+                this.currShieldOffset = shieldOffsets['L'];
                 break;
             case 'C':
+                this.currShieldOffset = shieldOffsets['C'];
                 reflect.x = 0;
                 break;
             case 'R':
                 reflect.x = -reflect.y;
+                this.currShieldOffset = shieldOffsets['R'];
                 break;
         }
 
@@ -131,6 +160,7 @@ export class Player extends GameObjects.GameObject implements IEntity {
         this.shieldTime = 0;
         // applys a proportional shield delay based on shield used; has min b/c without, spam would be meta
         this.reflectDir.set(0, 0);
+        this.currShieldOffset = shieldOffsets['D'];
     }
 
     /**
@@ -139,7 +169,7 @@ export class Player extends GameObjects.GameObject implements IEntity {
     damage() : void {
         (this.scene as PlayScene).endGame();
         
-        SoundMan.playUnweight('explosions');
+        SoundMan.play('explosion');
         let emitter = this.scene.add.particles(this.position.x, this.position.y, '__WHITE', {
             scaleX: 0.02,
             scaleY: 2,

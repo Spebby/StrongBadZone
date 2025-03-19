@@ -18,20 +18,21 @@ export class Preload extends Phaser.Scene {
         this.load.obj('room', 'models/wall.obj');
         this.load.obj('strongbad', 'models/strongbad.obj');
         this.load.obj('player', 'models/player.obj');
+        this.load.obj('shield', 'models/shield.obj');
         this.load.image('blank', 'models/SBZ.png');
-        this.load.image('ref', 'models/ref.png');
-        this.load.image('goblin', 'goblin.png');
 
         SoundMan.init(this);
         SoundMan.add('uiBlip', 'sfx/uiBlip.wav');
         SoundMan.add('select', 'sfx/select.wav');
-        SoundMan.add('shot', 'sfx/shot.wav');
-        SoundMan.add('coin', 'sfx/coin.wav');
-        SoundMan.add('pop',  'sfx/pop.wav');
-        SoundMan.add('fall', 'sfx/fall.wav');
-        SoundMan.add('gameOver', 'sfx/gameOver.wav');
-        SoundMan.add('typing', 'sfx/typingDing.wav');
-        SoundMan.importJSON('soundData.json');
+
+        SoundMan.add('typing', 'sfx/click.wav');
+        SoundMan.add('newLine', 'sfx/typingDing.wav');
+
+        SoundMan.add('explosion', 'sfx/explosion.ogg');
+        SoundMan.add('strongTaunt', 'sfx/strongTaunt.mp3');
+
+        SoundMan.add('block', 'sfx/reflect.ogg');
+        SoundMan.add('shoot', 'sfx/shoot.mp3');
     }
 
     create() : void {

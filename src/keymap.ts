@@ -16,7 +16,8 @@ export class KeyMap {
     static keyShieldL : Keyboard.Key;
     static keyShieldC : Keyboard.Key;
     static keyShieldR : Keyboard.Key;
-    static keyShield  : Record<string, Keyboard.Key>; 
+    static keyShield  : Record<string, Keyboard.Key>;
+    static keyMove : Record<string, Keyboard.Key>;
 
     static isShielding() {
         return KeyMap.keyShieldL.isDown || KeyMap.keyShieldC.isDown || KeyMap.keyShieldR.isDown;
@@ -41,6 +42,10 @@ export class KeyMap {
             L: KeyMap.keyShieldL,
             C: KeyMap.keyShieldC,
             R: KeyMap.keyShieldR
+        };
+        KeyMap.keyMove = {
+            L: KeyMap.keyLEFT,
+            R: KeyMap.keyRIGHT
         };
 
         KeyMap.keyDEBUG  = scene.input.keyboard.addKey(Keyboard.KeyCodes.F2)

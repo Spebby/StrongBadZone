@@ -29,6 +29,8 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
     constructor(scene : Phaser.Scene, x : number, y : number, mesh : GameObjects.Mesh, baseSpeed : number, travelDist : number, fireDelay : number, bulletSpeed : number) {
         super(scene, 'strongbadGameObject');
         this.mesh = mesh;
+        this.mesh.x = x;
+        this.mesh.y = y;
         this.position = new pMath.Vector2(x, y);
         this.velocity = new pMath.Vector2(0, 0);
 
@@ -60,6 +62,8 @@ export class Strongbad extends GameObjects.GameObject implements IEntity {
         //console.log(this);
         this.position.x += this.velocity.x * delta;
         this.position.y += this.velocity.y * delta;
+        this.mesh.x = this.position.x;
+        this.mesh.y = this.position.y;
         this.debugGraphics.strokeCircle(this.position.x, this.position.y, this.radius);
         if (this.position.x < (UIConfig.hWidth - this.travelDist) || (this.travelDist + UIConfig.hWidth) < this.position.x) {
             this.velocity.x *= -1;
@@ -251,7 +255,7 @@ export class Projectile extends GameObjects.Container {
 
     impact() : void {
         this.destroy();
-        SoundMan.play('impact');
+        //SoundMan.play('impact');
     }
 
     update(time : number, delta : number) {
@@ -290,6 +294,7 @@ export class Projectile extends GameObjects.Container {
             // todo: revise this b/c it doesn't always behave as expected
             // new V = <sign(r.x) V/|V| * r, r.y>
             this.velocity = new pMath.Vector2(Math.sign(r.x) * (this.velocity.scale(1 / this.velocity.length()).dot(r)), r.y).normalize();
+            SoundMan.play('block');
             return;
         } else if (this.y <= this.wall) { // bc phaser is stupid
             // hit strongbad

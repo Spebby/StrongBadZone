@@ -53,7 +53,7 @@ export let gConst = {
         fontFamily: 'JBM',
         fontSize: '32px',
         //backgroundColor: '#F3B141',
-        color: '#FFFFFF',
+        color: '#70161E',
         align: 'center',
         padding: {
             top: 5,
@@ -65,7 +65,7 @@ export let gConst = {
         fontFamily: 'JBM',
         fontSize: '32px',
         //backgroundColor: '#F3B141',
-        color: '#000000',
+        color: '#70161E',
         align: 'right',
         padding: {
             top: 5,
