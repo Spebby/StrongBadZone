@@ -1,5 +1,7 @@
 # StrongBadZone
 
+[![wakatime](https://wakatime.com/badge/user/6c1b4d80-35ad-487a-a081-efc861c8d411/project/53145e47-5855-4d51-8e5d-ad0410c87fc0.svg)](https://wakatime.com/badge/user/6c1b4d80-35ad-487a-a081-efc861c8d411/project/53145e47-5855-4d51-8e5d-ad0410c87fc0)
+
 Final Project for CMPM 120 @ UCSC, Winter '25.
 
 StrongBadZone is a fake game featured in the Strong Bad Email /#94 "video games",
